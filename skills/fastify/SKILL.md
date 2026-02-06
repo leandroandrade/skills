@@ -2,7 +2,7 @@
 name: fastify-best-practices
 description: Comprehensive best practices for Fastify development
 metadata:
-  tags: fastify, nodejs, typescript, backend, api, server, http
+  tags: fastify, nodejs, javascript, commonjs, backend, api, server, http
 ---
 
 ## When to use
@@ -11,7 +11,6 @@ Use this skill when you need to:
 - Develop backend applications using Fastify
 - Implement Fastify plugins and route handlers
 - Get guidance on Fastify architecture and patterns
-- Use TypeScript with Fastify (strip types)
 - Implement testing with Fastify's inject method
 - Configure validation, serialization, and error handling
 
@@ -28,7 +27,6 @@ Read individual rule files for detailed explanations and code examples:
 - [rules/testing.md](rules/testing.md) - Testing with inject()
 - [rules/performance.md](rules/performance.md) - Performance optimization
 - [rules/logging.md](rules/logging.md) - Logging with Pino
-- [rules/typescript.md](rules/typescript.md) - TypeScript integration
 - [rules/decorators.md](rules/decorators.md) - Decorators and extensions
 - [rules/content-type.md](rules/content-type.md) - Content type parsing
 - [rules/serialization.md](rules/serialization.md) - Response serialization

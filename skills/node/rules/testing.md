@@ -11,11 +11,11 @@ metadata:
 
 Use the built-in test runner (Node.js 22+):
 
-```typescript
-import { describe, it, before, after } from 'node:test';
+```javascript
+const { describe, it, before, after } = require('node:test');
 
 describe('UserService', () => {
-  let service: UserService;
+  let service;
 
   before(() => {
     service = new UserService();
@@ -40,8 +40,8 @@ describe('UserService', () => {
 
 Use the test context `t.mock` for mocking:
 
-```typescript
-import { describe, it } from 'node:test';
+```javascript
+const { describe, it } = require('node:test');
 
 describe('EmailService', () => {
   it('should send email via provider', async (t) => {
@@ -62,8 +62,8 @@ describe('EmailService', () => {
 
 ### Mocking Methods
 
-```typescript
-import { describe, it } from 'node:test';
+```javascript
+const { describe, it } = require('node:test');
 
 describe('UserController', () => {
   it('should fetch user from API', async (t) => {
@@ -85,18 +85,18 @@ Structure tests alongside source files:
 ```
 src/
   user/
-    user.service.ts
-    user.service.test.ts
-    user.repository.ts
-    user.repository.test.ts
+    user.service.js
+    user.service.test.js
+    user.repository.js
+    user.repository.test.js
 ```
 
 ## Snapshot Testing
 
 Use snapshots for complex outputs:
 
-```typescript
-import { describe, it } from 'node:test';
+```javascript
+const { describe, it } = require('node:test');
 
 describe('ReportGenerator', () => {
   it('should generate expected report', async (t) => {
@@ -110,11 +110,11 @@ describe('ReportGenerator', () => {
 
 Use lifecycle hooks properly:
 
-```typescript
-import { describe, it, before, after, beforeEach, afterEach } from 'node:test';
+```javascript
+const { describe, it, before, after, beforeEach, afterEach } = require('node:test');
 
 describe('Database tests', () => {
-  let db: Database;
+  let db;
 
   before(async () => {
     db = await Database.connect(testConfig);
@@ -144,7 +144,7 @@ describe('Database tests', () => {
 
 Tests must be independent and not share state:
 
-```typescript
+```javascript
 // BAD - shared mutable state
 let counter = 0;
 
@@ -181,10 +181,10 @@ Run tests with the built-in runner:
 node --test
 
 # Run specific file
-node --test src/user/user.service.test.ts
+node --test src/user/user.service.test.js
 
-# With TypeScript (Node.js 22.6+)
-node --test src/**/*.test.ts
+# Run all test files
+node --test src/**/*.test.js
 
 # With coverage
 node --test --experimental-test-coverage

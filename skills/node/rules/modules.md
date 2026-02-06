@@ -1,105 +1,96 @@
 ---
 name: modules
-description: ES Modules and CommonJS patterns
+description: CommonJS module patterns
 metadata:
-  tags: modules, esm, commonjs, imports, exports
+  tags: modules, commonjs, require, exports
 ---
 
 # Node.js Modules
 
-## Prefer ES Modules
+## Use CommonJS
 
-Use ES Modules (ESM) for new projects:
+Use CommonJS (`require`/`module.exports`) for all modules:
 
-```json
-// package.json
-{
-  "type": "module"
-}
-```
-
-```typescript
+```javascript
 // Named exports (preferred)
-export function processData(data: Data): Result {
+function processData(data) {
   // ...
 }
 
-export const CONFIG = {
+const CONFIG = {
   timeout: 5000,
 };
 
-// Named imports
-import { processData, CONFIG } from './utils.js';
+module.exports = { processData, CONFIG };
+
+// Require modules
+const { processData, CONFIG } = require('./utils');
 ```
 
-## File Extensions in ESM
+## Require Built-in Modules
 
-Always include file extensions in ESM imports:
+Always use the `node:` prefix for built-in modules:
 
-```typescript
-// GOOD - explicit extension
-import { helper } from './helper.js';
-import config from './config.json' with { type: 'json' };
-
-// BAD - missing extension (works in bundlers but not native ESM)
-import { helper } from './helper';
+```javascript
+const { createServer } = require('node:http');
+const { join } = require('node:path');
+const { readFile } = require('node:fs/promises');
 ```
 
 ## Barrel Exports
 
-Use index files to simplify imports:
+Use index files to simplify requires:
 
-```typescript
-// src/utils/index.ts
-export { formatDate, parseDate } from './date.js';
-export { formatCurrency } from './currency.js';
-export { validateEmail } from './validation.js';
+```javascript
+// src/utils/index.js
+const { formatDate, parseDate } = require('./date');
+const { formatCurrency } = require('./currency');
+const { validateEmail } = require('./validation');
+
+module.exports = { formatDate, parseDate, formatCurrency, validateEmail };
 
 // Consumer
-import { formatDate, formatCurrency } from './utils/index.js';
+const { formatDate, formatCurrency } = require('./utils');
 ```
 
-## Default vs Named Exports
+## Module Pattern
 
-Prefer named exports for better refactoring and tree-shaking:
+Prefer named exports for better clarity:
 
-```typescript
+```javascript
 // GOOD - named exports
-export function createServer(config: Config): Server {
+function createServer(config) {
   // ...
 }
 
-export function createClient(config: Config): Client {
+function createClient(config) {
   // ...
 }
 
-// AVOID - default exports
-export default function createServer(config: Config): Server {
-  // ...
+module.exports = { createServer, createClient };
+
+// AVOID - single default-like export when you have multiple
+module.exports = createServer;
+```
+
+## Dynamic Requires
+
+Use dynamic require for conditional loading:
+
+```javascript
+function loadPlugin(name) {
+  const plugin = require(`./plugins/${name}`);
+  return plugin;
 }
 ```
 
-## Dynamic Imports
+## __dirname and __filename
 
-Use dynamic imports for code splitting and conditional loading:
+Use `__dirname` and `__filename` which are natively available in CommonJS:
 
-```typescript
-async function loadPlugin(name: string): Promise<Plugin> {
-  const module = await import(`./plugins/${name}.js`);
-  return module.default;
-}
+```javascript
+const { join } = require('node:path');
 
-// Conditional loading
-const { default: heavy } = await import('./heavy-module.js');
-```
-
-## __dirname and __filename in ESM
-
-Use `import.meta.dirname` and `import.meta.filename` (Node.js 20.11+):
-
-```typescript
-import { join } from 'node:path';
-
-const configPath = join(import.meta.dirname, 'config.json');
-const currentFile = import.meta.filename;
+const configPath = join(__dirname, 'config.json');
+const currentFile = __filename;
 ```

@@ -11,8 +11,8 @@ metadata:
 
 Always use [close-with-grace](https://github.com/fastify/close-with-grace) for handling graceful shutdowns:
 
-```typescript
-import closeWithGrace from 'close-with-grace';
+```javascript
+const closeWithGrace = require('close-with-grace');
 
 closeWithGrace({ delay: 10000 }, async ({ signal, err }) => {
   if (err) {
@@ -29,9 +29,9 @@ closeWithGrace({ delay: 10000 }, async ({ signal, err }) => {
 
 Close HTTP servers gracefully with close-with-grace:
 
-```typescript
-import { createServer } from 'node:http';
-import closeWithGrace from 'close-with-grace';
+```javascript
+const { createServer } = require('node:http');
+const closeWithGrace = require('close-with-grace');
 
 const server = createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -48,7 +48,7 @@ closeWithGrace({ delay: 10000 }, async ({ signal, err }) => {
   }
   console.log(`${signal} received, closing server...`);
 
-  await new Promise<void>((resolve, reject) => {
+  await new Promise((resolve, reject) => {
     server.close((err) => (err ? reject(err) : resolve()));
   });
 
@@ -60,8 +60,8 @@ closeWithGrace({ delay: 10000 }, async ({ signal, err }) => {
 
 Fastify has built-in close-with-grace support:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+const Fastify = require('fastify');
 
 const app = Fastify({
   logger: true,
@@ -75,20 +75,18 @@ app.addHook('onClose', async () => {
   await cache.quit();
 });
 
-await app.listen({ port: 3000 });
+app.listen({ port: 3000 });
 ```
 
 ## Multiple Resources Cleanup
 
 Clean up multiple resources in order:
 
-```typescript
-import closeWithGrace from 'close-with-grace';
-import { createServer } from 'node:http';
+```javascript
+const closeWithGrace = require('close-with-grace');
+const { createServer } = require('node:http');
 
 const server = createServer(handler);
-const db = await connectDatabase();
-const redis = await connectRedis();
 
 server.listen(3000);
 
@@ -99,7 +97,7 @@ closeWithGrace({ delay: 15000 }, async ({ signal, err }) => {
   console.log(`${signal} received`);
 
   // Close in reverse order of initialization
-  await new Promise<void>((resolve) => server.close(() => resolve()));
+  await new Promise((resolve) => server.close(() => resolve()));
   console.log('HTTP server closed');
 
   await redis.quit();
@@ -114,19 +112,19 @@ closeWithGrace({ delay: 15000 }, async ({ signal, err }) => {
 
 Implement health checks that respect shutdown state:
 
-```typescript
-import closeWithGrace from 'close-with-grace';
+```javascript
+const closeWithGrace = require('close-with-grace');
 
 let isShuttingDown = false;
 
-function healthHandler(req: Request, res: Response) {
+function healthHandler(req, res) {
   if (isShuttingDown) {
     return res.status(503).json({ status: 'shutting_down' });
   }
   return res.json({ status: 'healthy' });
 }
 
-function readinessHandler(req: Request, res: Response) {
+function readinessHandler(req, res) {
   if (isShuttingDown) {
     return res.status(503).json({ ready: false });
   }
@@ -148,8 +146,8 @@ closeWithGrace({ delay: 10000 }, async ({ signal }) => {
 
 Use appropriate delays for container orchestration:
 
-```typescript
-import closeWithGrace from 'close-with-grace';
+```javascript
+const closeWithGrace = require('close-with-grace');
 
 // Kubernetes sends SIGTERM, then waits terminationGracePeriodSeconds (default 30s)
 // Set delay slightly lower to ensure clean exit
@@ -172,11 +170,11 @@ closeWithGrace({ delay: 25000 }, async ({ signal }) => {
 
 If you cannot use close-with-grace, handle signals manually:
 
-```typescript
-const signals: NodeJS.Signals[] = ['SIGTERM', 'SIGINT'];
+```javascript
+const signals = ['SIGTERM', 'SIGINT'];
 let isShuttingDown = false;
 
-async function shutdown(signal: string): Promise<void> {
+async function shutdown(signal) {
   if (isShuttingDown) return;
   isShuttingDown = true;
 

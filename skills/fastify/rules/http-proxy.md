@@ -11,9 +11,11 @@ metadata:
 
 Use `@fastify/http-proxy` for simple reverse proxy scenarios:
 
-```typescript
-import Fastify from 'fastify';
-import httpProxy from '@fastify/http-proxy';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const httpProxy = require('@fastify/http-proxy');
 
 const app = Fastify({ logger: true });
 
@@ -37,16 +39,18 @@ app.register(httpProxy, {
   },
 });
 
-await app.listen({ port: 3000 });
+app.listen({ port: 3000 });
 ```
 
 ## @fastify/reply-from
 
 For more control over proxying, use `@fastify/reply-from` with `reply.from()`:
 
-```typescript
-import Fastify from 'fastify';
-import replyFrom from '@fastify/reply-from';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const replyFrom = require('@fastify/reply-from');
 
 const app = Fastify({ logger: true });
 
@@ -96,9 +100,11 @@ function selectUpstream(request) {
 
 Build an API gateway with multiple backends:
 
-```typescript
-import Fastify from 'fastify';
-import replyFrom from '@fastify/reply-from';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const replyFrom = require('@fastify/reply-from');
 
 const app = Fastify({ logger: true });
 
@@ -143,7 +149,7 @@ app.register(async function (fastify) {
 
 Handle request bodies when proxying:
 
-```typescript
+```javascript
 app.post('/api/data', async (request, reply) => {
   return reply.from('/data', {
     body: request.body,
@@ -164,7 +170,7 @@ app.post('/upload', async (request, reply) => {
 
 Handle upstream errors gracefully:
 
-```typescript
+```javascript
 app.register(replyFrom, {
   base: 'http://backend:3001',
   // Called when upstream returns an error
@@ -195,9 +201,11 @@ app.get('/data', async (request, reply) => {
 
 Proxy WebSocket connections:
 
-```typescript
-import Fastify from 'fastify';
-import httpProxy from '@fastify/http-proxy';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const httpProxy = require('@fastify/http-proxy');
 
 const app = Fastify({ logger: true });
 
@@ -212,7 +220,7 @@ app.register(httpProxy, {
 
 Configure proxy timeouts:
 
-```typescript
+```javascript
 app.register(replyFrom, {
   base: 'http://backend:3001',
   http: {
@@ -227,15 +235,15 @@ app.register(replyFrom, {
 
 Add caching to proxied responses:
 
-```typescript
-import { createCache } from 'async-cache-dedupe';
+```javascript
+const { createCache } = require('async-cache-dedupe');
 
 const cache = createCache({
   ttl: 60,
   storage: { type: 'memory' },
 });
 
-cache.define('proxyGet', async (url: string) => {
+cache.define('proxyGet', async (url) => {
   const response = await fetch(`http://backend:3001${url}`);
   return response.json();
 });

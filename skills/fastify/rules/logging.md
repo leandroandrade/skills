@@ -11,15 +11,17 @@ metadata:
 
 Fastify uses Pino for high-performance logging:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   logger: true, // Enable default logging
 });
 
 // Or with configuration
-const app = Fastify({
+const app2 = Fastify({
   logger: {
     level: 'info',
     transport: {
@@ -36,7 +38,7 @@ const app = Fastify({
 
 Available log levels (in order of severity):
 
-```typescript
+```javascript
 app.log.trace('Detailed debugging');
 app.log.debug('Debugging information');
 app.log.info('General information');
@@ -49,7 +51,7 @@ app.log.fatal('Fatal errors');
 
 Each request has its own logger with request context:
 
-```typescript
+```javascript
 app.get('/users/:id', async (request) => {
   // Logs include request ID automatically
   request.log.info('Fetching user');
@@ -70,7 +72,7 @@ app.get('/users/:id', async (request) => {
 
 Always use structured logging with objects:
 
-```typescript
+```javascript
 // GOOD - structured, searchable
 request.log.info({
   action: 'user_created',
@@ -91,7 +93,9 @@ request.log.error(`Failed to fetch user: ${error.message}`);
 
 ## Logging Configuration by Environment
 
-```typescript
+```javascript
+'use strict';
+
 function getLoggerConfig() {
   if (process.env.NODE_ENV === 'production') {
     return {
@@ -118,6 +122,8 @@ function getLoggerConfig() {
   };
 }
 
+const Fastify = require('fastify');
+
 const app = Fastify({
   logger: getLoggerConfig(),
 });
@@ -127,7 +133,11 @@ const app = Fastify({
 
 Customize how objects are serialized:
 
-```typescript
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+
 const app = Fastify({
   logger: {
     level: 'info',
@@ -166,8 +176,10 @@ request.log.info({ user: request.user }, 'User action');
 
 Prevent logging sensitive information:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   logger: {
@@ -192,7 +204,7 @@ const app = Fastify({
 
 Create child loggers with additional context:
 
-```typescript
+```javascript
 app.addHook('onRequest', async (request) => {
   // Add user context to all logs for this request
   if (request.user) {
@@ -218,7 +230,11 @@ const userService = {
 
 Customize automatic request logging:
 
-```typescript
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+
 const app = Fastify({
   logger: true,
   disableRequestLogging: true, // Disable default request/response logs
@@ -245,7 +261,7 @@ app.addHook('onResponse', async (request, reply) => {
 
 Properly log errors with stack traces:
 
-```typescript
+```javascript
 app.setErrorHandler((error, request, reply) => {
   // Log error with full details
   request.log.error({
@@ -276,8 +292,11 @@ app.get('/data', async (request) => {
 
 Configure where logs are sent:
 
-```typescript
-import { createWriteStream } from 'node:fs';
+```javascript
+'use strict';
+
+const { createWriteStream } = require('node:fs');
+const Fastify = require('fastify');
 
 // File output
 const app = Fastify({
@@ -288,7 +307,7 @@ const app = Fastify({
 });
 
 // Multiple destinations with pino.multistream
-import pino from 'pino';
+const pino = require('pino');
 
 const streams = [
   { stream: process.stdout },
@@ -296,7 +315,7 @@ const streams = [
   { level: 'error', stream: createWriteStream('./error.log') },
 ];
 
-const app = Fastify({
+const app2 = Fastify({
   logger: pino({ level: 'info' }, pino.multistream(streams)),
 });
 ```
@@ -311,8 +330,11 @@ node app.js | pino-roll --frequency daily --extension .log
 
 Or configure programmatically:
 
-```typescript
-import { createStream } from 'rotating-file-stream';
+```javascript
+'use strict';
+
+const { createStream } = require('rotating-file-stream');
+const Fastify = require('fastify');
 
 const stream = createStream('app.log', {
   size: '10M',     // Rotate every 10MB
@@ -333,7 +355,11 @@ const app = Fastify({
 
 Format logs for aggregation services:
 
-```typescript
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+
 // For ELK Stack, Datadog, etc. - use default JSON format
 const app = Fastify({
   logger: {
@@ -343,7 +369,7 @@ const app = Fastify({
 });
 
 // Add service metadata
-const app = Fastify({
+const app2 = Fastify({
   logger: {
     level: 'info',
     base: {
@@ -359,7 +385,11 @@ const app = Fastify({
 
 Use request IDs for distributed tracing:
 
-```typescript
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+
 const app = Fastify({
   logger: true,
   requestIdHeader: 'x-request-id', // Use incoming header
@@ -386,7 +416,7 @@ const response = await fetch('http://other-service/api', {
 
 Pino is fast, but consider:
 
-```typescript
+```javascript
 // Avoid string concatenation in log calls
 // BAD
 request.log.info('User ' + user.id + ' did ' + action);

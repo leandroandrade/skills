@@ -1,5 +1,7 @@
-import { createServer, IncomingMessage, ServerResponse, Server } from 'node:http';
-import closeWithGrace from 'close-with-grace';
+'use strict';
+
+const { createServer } = require('node:http');
+const closeWithGrace = require('close-with-grace');
 
 /**
  * Example of a graceful HTTP server using close-with-grace.
@@ -9,7 +11,7 @@ import closeWithGrace from 'close-with-grace';
 let isShuttingDown = false;
 
 function createHandler() {
-  return (req: IncomingMessage, res: ServerResponse) => {
+  return (req, res) => {
     // During shutdown, disable keep-alive to drain connections
     if (isShuttingDown) {
       res.setHeader('Connection', 'close');
@@ -33,7 +35,7 @@ function createHandler() {
   };
 }
 
-function closeServer(server: Server): Promise<void> {
+function closeServer(server) {
   return new Promise((resolve, reject) => {
     // Close idle connections immediately
     server.closeIdleConnections();
@@ -53,7 +55,7 @@ function closeServer(server: Server): Promise<void> {
   });
 }
 
-export async function main(): Promise<void> {
+async function main() {
   const server = createServer(createHandler());
 
   server.listen(3000, '0.0.0.0', () => {
@@ -74,7 +76,8 @@ export async function main(): Promise<void> {
 }
 
 // Run if executed directly
-const isMain = import.meta.url === `file://${process.argv[1]}`;
-if (isMain) {
+if (require.main === module) {
   main().catch(console.error);
 }
+
+module.exports = { main };

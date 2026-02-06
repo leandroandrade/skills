@@ -1,13 +1,15 @@
-import { describe, it, before, after } from 'node:test';
-import assert from 'node:assert/strict';
-import { createServer, IncomingMessage, ServerResponse, Server } from 'node:http';
+'use strict';
+
+const { describe, it, before, after } = require('node:test');
+const assert = require('node:assert/strict');
+const { createServer } = require('node:http');
 
 describe('graceful server shutdown', () => {
-  let server: Server;
+  let server;
   let isShuttingDown = false;
 
   function createHandler() {
-    return (req: IncomingMessage, res: ServerResponse) => {
+    return (req, res) => {
       if (isShuttingDown) {
         res.setHeader('Connection', 'close');
       }
@@ -34,10 +36,10 @@ describe('graceful server shutdown', () => {
   });
 
   after(async () => {
-    await new Promise<void>((resolve) => server.close(() => resolve()));
+    await new Promise((resolve) => server.close(() => resolve()));
   });
 
-  function getPort(): number {
+  function getPort() {
     const address = server.address();
     if (typeof address === 'object' && address !== null) {
       return address.port;

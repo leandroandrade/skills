@@ -11,14 +11,14 @@ metadata:
 
 Never perform CPU-intensive operations synchronously:
 
-```typescript
+```javascript
 // BAD - blocks event loop
-function hashPasswordSync(password: string): string {
+function hashPasswordSync(password) {
   return crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512').toString('hex');
 }
 
 // GOOD - async operation
-async function hashPassword(password: string): Promise<string> {
+async function hashPassword(password) {
   return new Promise((resolve, reject) => {
     crypto.pbkdf2(password, salt, 100000, 64, 'sha512', (err, key) => {
       if (err) reject(err);
@@ -32,20 +32,21 @@ async function hashPassword(password: string): Promise<string> {
 
 Use [piscina](https://github.com/piscinajs/piscina) for CPU-intensive tasks:
 
-```typescript
-// worker.ts
-export default function heavyComputation(data: { input: string }): string {
+```javascript
+// worker.js
+module.exports = function heavyComputation(data) {
   // CPU-intensive work here
   return result;
-}
+};
 ```
 
-```typescript
-// main.ts
-import Piscina from 'piscina';
+```javascript
+// main.js
+const { join } = require('node:path');
+const Piscina = require('piscina');
 
 const piscina = new Piscina({
-  filename: new URL('./worker.ts', import.meta.url).href,
+  filename: join(__dirname, 'worker.js'),
 });
 
 const result = await piscina.run({ input: 'data' });
@@ -57,8 +58,8 @@ Piscina handles worker pool management, task queuing, and load balancing automat
 
 Always use connection pools for databases:
 
-```typescript
-import { Pool } from 'pg';
+```javascript
+const { Pool } = require('pg');
 
 const pool = new Pool({
   max: 20,
@@ -66,7 +67,7 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-async function query<T>(sql: string, params: unknown[]): Promise<T[]> {
+async function query(sql, params) {
   const client = await pool.connect();
   try {
     const result = await client.query(sql, params);
@@ -81,28 +82,28 @@ async function query<T>(sql: string, params: unknown[]): Promise<T[]> {
 
 Common memory leak patterns to avoid:
 
-```typescript
+```javascript
 // BAD - unbounded cache
 const cache = new Map();
-function addToCache(key: string, value: unknown) {
+function addToCache(key, value) {
   cache.set(key, value); // Never cleaned up
 }
 
 // GOOD - LRU cache with max size
-import { LRUCache } from 'lru-cache';
+const { LRUCache } = require('lru-cache');
 
-const cache = new LRUCache<string, unknown>({
+const cache = new LRUCache({
   max: 500,
   ttl: 1000 * 60 * 5,
 });
 
 // BAD - listener leak
-function subscribe(emitter: EventEmitter) {
+function subscribe(emitter) {
   emitter.on('event', handler); // Never removed
 }
 
 // GOOD - cleanup listeners
-function subscribe(emitter: EventEmitter): () => void {
+function subscribe(emitter) {
   emitter.on('event', handler);
   return () => emitter.off('event', handler);
 }
@@ -112,13 +113,12 @@ function subscribe(emitter: EventEmitter): () => void {
 
 Load modules only when needed:
 
-```typescript
-let heavyModule: HeavyModule | null = null;
+```javascript
+let heavyModule = null;
 
-async function getHeavyModule(): Promise<HeavyModule> {
+function getHeavyModule() {
   if (!heavyModule) {
-    const { HeavyModule } = await import('./heavy-module.js');
-    heavyModule = new HeavyModule();
+    heavyModule = require('./heavy-module');
   }
   return heavyModule;
 }

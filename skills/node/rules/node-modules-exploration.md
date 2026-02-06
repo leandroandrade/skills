@@ -37,7 +37,7 @@ npm ls fastify
 # List package contents
 ls node_modules/fastify/
 
-# Find TypeScript definitions
+# Find type definitions (if available)
 ls node_modules/fastify/*.d.ts
 ls node_modules/@types/node/
 
@@ -142,10 +142,10 @@ node -e "console.log(JSON.stringify(require('./node_modules/fastify/package.json
 cat node_modules/fastify/package.json | grep '"main"'
 ```
 
-### TypeScript Definitions
+### Type Definitions
 
 ```bash
-# Find type definitions
+# Find type definitions (useful for understanding APIs)
 ls node_modules/fastify/*.d.ts
 cat node_modules/fastify/package.json | grep '"types"\|"typings"'
 

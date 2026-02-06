@@ -11,15 +11,17 @@ metadata:
 
 Use `close-with-grace` for proper shutdown handling:
 
-```typescript
-import Fastify from 'fastify';
-import closeWithGrace from 'close-with-grace';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const closeWithGrace = require('close-with-grace');
 
 const app = Fastify({ logger: true });
 
 // Register plugins and routes
-await app.register(import('./plugins/index.js'));
-await app.register(import('./routes/index.js'));
+app.register(require('./plugins/index.js'));
+app.register(require('./routes/index.js'));
 
 // Graceful shutdown handler
 closeWithGrace({ delay: 10000 }, async ({ signal, err }) => {
@@ -33,19 +35,22 @@ closeWithGrace({ delay: 10000 }, async ({ signal, err }) => {
 });
 
 // Start server
-await app.listen({
+app.listen({
   port: parseInt(process.env.PORT || '3000', 10),
   host: '0.0.0.0',
+}, (err) => {
+  if (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
 });
-
-app.log.info(`Server listening on ${app.server.address()}`);
 ```
 
 ## Health Check Endpoints
 
 Implement comprehensive health checks:
 
-```typescript
+```javascript
 app.get('/health', async () => {
   return { status: 'ok', timestamp: new Date().toISOString() };
 });
@@ -147,7 +152,7 @@ ENV PORT=3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
-CMD ["node", "src/app.ts"]
+CMD ["node", "src/app.js"]
 ```
 
 ```yaml
@@ -258,8 +263,10 @@ spec:
 
 Configure logging for production:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   logger: {
@@ -294,7 +301,7 @@ const app = Fastify({
 
 Configure appropriate timeouts:
 
-```typescript
+```javascript
 const app = Fastify({
   connectionTimeout: 30000,     // 30s connection timeout
   keepAliveTimeout: 72000,      // 72s keep-alive (longer than ALB 60s)
@@ -314,7 +321,7 @@ app.get('/long-operation', {
 
 Configure for load balancers:
 
-```typescript
+```javascript
 const app = Fastify({
   // Trust first proxy (load balancer)
   trustProxy: true,
@@ -331,14 +338,16 @@ const app = Fastify({
 
 ## Static File Serving
 
-Serve static files efficiently. **Always use `import.meta.dirname` as the base path**, never `process.cwd()`:
+Serve static files efficiently. **Always use `__dirname` as the base path**, never `process.cwd()`:
 
-```typescript
-import fastifyStatic from '@fastify/static';
-import { join } from 'node:path';
+```javascript
+'use strict';
+
+const fastifyStatic = require('@fastify/static');
+const { join } = require('node:path');
 
 app.register(fastifyStatic, {
-  root: join(import.meta.dirname, '..', 'public'),
+  root: join(__dirname, '..', 'public'),
   prefix: '/static/',
   maxAge: '1d',
   immutable: true,
@@ -351,8 +360,8 @@ app.register(fastifyStatic, {
 
 Enable response compression:
 
-```typescript
-import fastifyCompress from '@fastify/compress';
+```javascript
+const fastifyCompress = require('@fastify/compress');
 
 app.register(fastifyCompress, {
   global: true,
@@ -365,8 +374,10 @@ app.register(fastifyCompress, {
 
 Expose Prometheus metrics:
 
-```typescript
-import { register, collectDefaultMetrics, Counter, Histogram } from 'prom-client';
+```javascript
+'use strict';
+
+const { register, collectDefaultMetrics, Counter, Histogram } = require('prom-client');
 
 collectDefaultMetrics();
 
@@ -406,8 +417,10 @@ app.get('/metrics', async (request, reply) => {
 
 Support rolling updates:
 
-```typescript
-import closeWithGrace from 'close-with-grace';
+```javascript
+'use strict';
+
+const closeWithGrace = require('close-with-grace');
 
 // Stop accepting new connections gracefully
 closeWithGrace({ delay: 30000 }, async ({ signal }) => {
@@ -422,4 +435,3 @@ closeWithGrace({ delay: 30000 }, async ({ signal }) => {
   app.log.info('Server closed');
 });
 ```
-

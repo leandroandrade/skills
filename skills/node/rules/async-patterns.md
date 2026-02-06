@@ -11,10 +11,10 @@ metadata:
 
 Use async/await over raw Promises for readability:
 
-```typescript
+```javascript
 // GOOD
-async function processItems(items: Item[]): Promise<Result[]> {
-  const results: Result[] = [];
+async function processItems(items) {
+  const results = [];
   for (const item of items) {
     const result = await processItem(item);
     results.push(result);
@@ -23,7 +23,7 @@ async function processItems(items: Item[]): Promise<Result[]> {
 }
 
 // AVOID - callback-style Promise chains
-function processItems(items: Item[]): Promise<Result[]> {
+function processItems(items) {
   return Promise.resolve([])
     .then((results) => {
       return items.reduce((chain, item) => {
@@ -37,8 +37,8 @@ function processItems(items: Item[]): Promise<Result[]> {
 
 Use Promise.all for independent operations:
 
-```typescript
-async function fetchAllData(ids: string[]): Promise<Data[]> {
+```javascript
+async function fetchAllData(ids) {
   const promises = ids.map((id) => fetchData(id));
   return Promise.all(promises);
 }
@@ -48,8 +48,8 @@ async function fetchAllData(ids: string[]): Promise<Data[]> {
 
 Limit concurrent operations to prevent resource exhaustion and extreme memory usage. Use [p-limit](https://github.com/sindresorhus/p-limit) or [p-map](https://github.com/sindresorhus/p-map):
 
-```typescript
-import pLimit from 'p-limit';
+```javascript
+const pLimit = require('p-limit');
 
 const limit = pLimit(5); // Max 5 concurrent operations
 
@@ -60,8 +60,8 @@ const results = await Promise.all(
 
 Or use p-map for cleaner syntax:
 
-```typescript
-import pMap from 'p-map';
+```javascript
+const pMap = require('p-map');
 
 const results = await pMap(items, processItem, { concurrency: 5 });
 ```
@@ -70,13 +70,13 @@ const results = await pMap(items, processItem, { concurrency: 5 });
 
 Use Promise.allSettled when some failures are acceptable:
 
-```typescript
-async function fetchMultiple(urls: string[]): Promise<Map<string, string | Error>> {
+```javascript
+async function fetchMultiple(urls) {
   const results = await Promise.allSettled(
     urls.map((url) => fetch(url).then((r) => r.text()))
   );
 
-  const map = new Map<string, string | Error>();
+  const map = new Map();
   urls.forEach((url, i) => {
     const result = results[i];
     map.set(
@@ -93,7 +93,7 @@ async function fetchMultiple(urls: string[]): Promise<Map<string, string | Error
 
 Constructors cannot be async. Use factory functions instead:
 
-```typescript
+```javascript
 // BAD - constructor cannot await
 class Database {
   constructor() {
@@ -103,9 +103,11 @@ class Database {
 
 // GOOD - factory function
 class Database {
-  private constructor(private connection: Connection) {}
+  constructor(connection) {
+    this.connection = connection;
+  }
 
-  static async create(config: Config): Promise<Database> {
+  static async create(config) {
     const connection = await connect(config);
     return new Database(connection);
   }
@@ -119,11 +121,8 @@ const db = await Database.create(config);
 
 Use AbortController to cancel long-running operations:
 
-```typescript
-async function fetchWithTimeout(
-  url: string,
-  timeoutMs: number
-): Promise<Response> {
+```javascript
+async function fetchWithTimeout(url, timeoutMs) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 

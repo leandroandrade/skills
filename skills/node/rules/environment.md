@@ -13,18 +13,18 @@ Use Node.js built-in `--env-file` flag to load environment variables:
 
 ```bash
 # Load from .env file
-node --env-file=.env app.ts
+node --env-file=.env app.js
 
 # Load multiple env files (later files override earlier ones)
-node --env-file=.env --env-file=.env.local app.ts
+node --env-file=.env --env-file=.env.local app.js
 ```
 
 ### Programmatic API
 
 Load environment files programmatically with `process.loadEnvFile()`:
 
-```typescript
-import { loadEnvFile } from 'node:process';
+```javascript
+const { loadEnvFile } = require('node:process');
 
 // Load .env from current directory
 loadEnvFile();
@@ -37,11 +37,11 @@ loadEnvFile('.env.local');
 
 ### Using env-schema with TypeBox
 
-Use [env-schema](https://github.com/fastify/env-schema) with [TypeBox](https://github.com/sinclairzx81/typebox) for type-safe environment validation:
+Use [env-schema](https://github.com/fastify/env-schema) with [TypeBox](https://github.com/sinclairzx81/typebox) for validated environment variables:
 
-```typescript
-import { envSchema } from 'env-schema';
-import { Type, Static } from '@sinclair/typebox';
+```javascript
+const { envSchema } = require('env-schema');
+const { Type } = require('@sinclair/typebox');
 
 const schema = Type.Object({
   PORT: Type.Number({ default: 3000 }),
@@ -55,17 +55,17 @@ const schema = Type.Object({
   ], { default: 'info' }),
 });
 
-type Env = Static<typeof schema>;
+const env = envSchema({ schema });
 
-export const env = envSchema<Env>({ schema });
+module.exports = { env };
 ```
 
 ### Using Zod
 
 Alternatively, use [Zod](https://github.com/colinhacks/zod) for validation:
 
-```typescript
-import { z } from 'zod';
+```javascript
+const { z } = require('zod');
 
 const EnvSchema = z.object({
   PORT: z.coerce.number().default(3000),
@@ -74,9 +74,7 @@ const EnvSchema = z.object({
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
 });
 
-type Env = z.infer<typeof EnvSchema>;
-
-function loadEnv(): Env {
+function loadEnv() {
   const result = EnvSchema.safeParse(process.env);
 
   if (!result.success) {
@@ -88,7 +86,9 @@ function loadEnv(): Env {
   return result.data;
 }
 
-export const env = loadEnv();
+const env = loadEnv();
+
+module.exports = { env };
 ```
 
 ## Avoid NODE_ENV
@@ -102,7 +102,7 @@ export const env = loadEnv();
 
 This leads to problems:
 
-```typescript
+```javascript
 // BAD - NODE_ENV conflates concerns
 if (process.env.NODE_ENV === 'development') {
   enableDebugLogging();    // logging concern
@@ -113,7 +113,7 @@ if (process.env.NODE_ENV === 'development') {
 
 Instead, use explicit environment variables for each concern:
 
-```typescript
+```javascript
 // GOOD - explicit variables for each concern
 const config = {
   logging: {
@@ -138,29 +138,10 @@ This approach:
 
 ## Configuration Object Pattern
 
-Create a typed configuration object:
+Create a configuration object:
 
-```typescript
-interface Config {
-  server: {
-    port: number;
-    host: string;
-  };
-  database: {
-    url: string;
-    poolSize: number;
-  };
-  auth: {
-    jwtSecret: string;
-    jwtExpiresIn: string;
-  };
-  features: {
-    enableMetrics: boolean;
-    enableTracing: boolean;
-  };
-}
-
-function createConfig(): Config {
+```javascript
+function createConfig() {
   return {
     server: {
       port: parseInt(process.env.PORT || '3000', 10),
@@ -181,7 +162,7 @@ function createConfig(): Config {
   };
 }
 
-function requireEnv(name: string): string {
+function requireEnv(name) {
   const value = process.env[name];
   if (!value) {
     throw new Error(`Missing required environment variable: ${name}`);
@@ -189,7 +170,9 @@ function requireEnv(name: string): string {
   return value;
 }
 
-export const config = createConfig();
+const config = createConfig();
+
+module.exports = { config };
 ```
 
 ## .env File Structure
@@ -240,14 +223,16 @@ These services inject secrets as environment variables at runtime, keeping them 
 
 Implement feature flags via environment:
 
-```typescript
+```javascript
 const features = {
   newDashboard: process.env.FEATURE_NEW_DASHBOARD === 'true',
   betaApi: process.env.FEATURE_BETA_API === 'true',
   darkMode: process.env.FEATURE_DARK_MODE === 'true',
 };
 
-export function isFeatureEnabled(feature: keyof typeof features): boolean {
+function isFeatureEnabled(feature) {
   return features[feature] ?? false;
 }
+
+module.exports = { isFeatureEnabled };
 ```

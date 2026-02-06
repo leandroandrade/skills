@@ -20,8 +20,10 @@ Fastify is designed for performance. Key optimizations are built-in:
 
 Protect your application from overload with `@fastify/under-pressure`:
 
-```typescript
-import underPressure from '@fastify/under-pressure';
+```javascript
+'use strict';
+
+const underPressure = require('@fastify/under-pressure');
 
 app.register(underPressure, {
   maxEventLoopDelay: 1000,        // Max event loop delay in ms
@@ -46,7 +48,7 @@ app.get('/health', async (request, reply) => {
 
 Response schemas enable fast-json-stringify, which is significantly faster than JSON.stringify:
 
-```typescript
+```javascript
 // FAST - uses fast-json-stringify
 app.get('/users', {
   schema: {
@@ -78,7 +80,7 @@ app.get('/users-slow', async () => {
 
 Add schemas at startup, not at request time:
 
-```typescript
+```javascript
 // GOOD - schemas compiled at startup
 app.addSchema({ $id: 'user', ... });
 
@@ -97,8 +99,10 @@ app.get('/users', async (request, reply) => {
 
 Pino is fast, but excessive logging has overhead:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 // Set log level via environment variable
 const app = Fastify({
@@ -123,8 +127,10 @@ app.get('/data', async (request) => {
 
 Use connection pools for databases:
 
-```typescript
-import postgres from 'postgres';
+```javascript
+'use strict';
+
+const postgres = require('postgres');
 
 // Create pool at startup
 const sql = postgres(process.env.DATABASE_URL, {
@@ -145,12 +151,14 @@ app.get('/users', async () => {
 
 Use `piscina` for CPU-intensive operations. It provides a robust worker thread pool:
 
-```typescript
-import Piscina from 'piscina';
-import { join } from 'node:path';
+```javascript
+'use strict';
+
+const Piscina = require('piscina');
+const { join } = require('node:path');
 
 const piscina = new Piscina({
-  filename: join(import.meta.dirname, 'workers', 'compute.js'),
+  filename: join(__dirname, 'workers', 'compute.js'),
 });
 
 app.post('/compute', async (request) => {
@@ -159,21 +167,25 @@ app.post('/compute', async (request) => {
 });
 ```
 
-```typescript
+```javascript
 // workers/compute.js
-export default function compute(data) {
+'use strict';
+
+module.exports = function compute(data) {
   // CPU-intensive work here
   return processedResult;
-}
+};
 ```
 
 ## Stream Large Responses
 
 Stream large payloads instead of buffering:
 
-```typescript
-import { createReadStream } from 'node:fs';
-import { pipeline } from 'node:stream/promises';
+```javascript
+'use strict';
+
+const { createReadStream } = require('node:fs');
+const { pipeline } = require('node:stream/promises');
 
 // GOOD - stream file
 app.get('/large-file', async (request, reply) => {
@@ -211,10 +223,12 @@ app.get('/export', async (request, reply) => {
 
 Implement caching for expensive operations:
 
-```typescript
-import { LRUCache } from 'lru-cache';
+```javascript
+'use strict';
 
-const cache = new LRUCache<string, unknown>({
+const { LRUCache } = require('lru-cache');
+
+const cache = new LRUCache({
   max: 1000,
   ttl: 60000, // 1 minute
 });
@@ -245,8 +259,10 @@ app.get('/static-data', async (request, reply) => {
 
 Use `async-cache-dedupe` for deduplicating concurrent identical requests and caching:
 
-```typescript
-import { createCache } from 'async-cache-dedupe';
+```javascript
+'use strict';
+
+const { createCache } = require('async-cache-dedupe');
 
 const cache = createCache({
   ttl: 60, // seconds
@@ -254,7 +270,7 @@ const cache = createCache({
   storage: { type: 'memory' },
 });
 
-cache.define('fetchData', async (id: string) => {
+cache.define('fetchData', async (id) => {
   return db.findById(id);
 });
 
@@ -268,9 +284,11 @@ app.get('/data/:id', async (request) => {
 
 For distributed caching, use Redis storage:
 
-```typescript
-import { createCache } from 'async-cache-dedupe';
-import Redis from 'ioredis';
+```javascript
+'use strict';
+
+const { createCache } = require('async-cache-dedupe');
+const Redis = require('ioredis');
 
 const redis = new Redis(process.env.REDIS_URL);
 
@@ -284,8 +302,10 @@ const cache = createCache({
 
 Set appropriate payload limits:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   bodyLimit: 1048576, // 1MB default
@@ -301,8 +321,10 @@ app.post('/upload', {
 
 Use compression for responses:
 
-```typescript
-import fastifyCompress from '@fastify/compress';
+```javascript
+'use strict';
+
+const fastifyCompress = require('@fastify/compress');
 
 app.register(fastifyCompress, {
   global: true,
@@ -320,8 +342,10 @@ app.get('/already-compressed', {
 
 Configure appropriate timeouts:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   connectionTimeout: 30000, // 30 seconds
@@ -342,8 +366,10 @@ app.get('/long-operation', {
 
 Disable features you don't need:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   disableRequestLogging: true, // If you don't need request logs
@@ -371,9 +397,11 @@ autocannon -c 100 -d 30 -p 10 http://localhost:3000/api/users
 # -p: pipelining factor
 ```
 
-```typescript
+```javascript
+'use strict';
+
 // Programmatic benchmarking
-import autocannon from 'autocannon';
+const autocannon = require('autocannon');
 
 const result = await autocannon({
   url: 'http://localhost:3000/api/users',
@@ -399,7 +427,9 @@ This generates an interactive flame graph to identify performance bottlenecks.
 
 Monitor and optimize memory usage:
 
-```typescript
+```javascript
+'use strict';
+
 // Add health endpoint with memory info
 app.get('/health', async () => {
   const memory = process.memoryUsage();

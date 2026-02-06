@@ -11,9 +11,11 @@ metadata:
 
 Enable Cross-Origin Resource Sharing:
 
-```typescript
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const cors = require('@fastify/cors');
 
 const app = Fastify();
 
@@ -35,7 +37,7 @@ app.register(cors, {
 
 Validate origins dynamically:
 
-```typescript
+```javascript
 app.register(cors, {
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, etc.)
@@ -71,7 +73,7 @@ app.register(cors, {
 
 Configure CORS for specific routes:
 
-```typescript
+```javascript
 app.register(cors, {
   origin: true, // Reflect request origin
   credentials: true,
@@ -94,8 +96,10 @@ app.route({
 
 Add security headers:
 
-```typescript
-import helmet from '@fastify/helmet';
+```javascript
+'use strict';
+
+const helmet = require('@fastify/helmet');
 
 app.register(helmet, {
   contentSecurityPolicy: {
@@ -115,7 +119,7 @@ app.register(helmet, {
 
 Fine-tune security headers:
 
-```typescript
+```javascript
 app.register(helmet, {
   // Strict Transport Security
   hsts: {
@@ -162,8 +166,10 @@ app.register(helmet, {
 
 Protect against abuse:
 
-```typescript
-import rateLimit from '@fastify/rate-limit';
+```javascript
+'use strict';
+
+const rateLimit = require('@fastify/rate-limit');
 
 app.register(rateLimit, {
   max: 100,
@@ -198,9 +204,11 @@ app.get('/health', {
 
 Use Redis for distributed rate limiting:
 
-```typescript
-import rateLimit from '@fastify/rate-limit';
-import Redis from 'ioredis';
+```javascript
+'use strict';
+
+const rateLimit = require('@fastify/rate-limit');
+const Redis = require('ioredis');
 
 const redis = new Redis(process.env.REDIS_URL);
 
@@ -220,9 +228,11 @@ app.register(rateLimit, {
 
 Protect against Cross-Site Request Forgery:
 
-```typescript
-import fastifyCsrf from '@fastify/csrf-protection';
-import fastifyCookie from '@fastify/cookie';
+```javascript
+'use strict';
+
+const fastifyCsrf = require('@fastify/csrf-protection');
+const fastifyCookie = require('@fastify/cookie');
 
 app.register(fastifyCookie);
 app.register(fastifyCsrf, {
@@ -252,7 +262,7 @@ app.post('/transfer', {
 
 Add custom headers:
 
-```typescript
+```javascript
 app.addHook('onSend', async (request, reply) => {
   // Custom security headers
   reply.header('X-Request-ID', request.id);
@@ -273,8 +283,10 @@ app.get('/download', async (request, reply) => {
 
 Configure secure cookies:
 
-```typescript
-import cookie from '@fastify/cookie';
+```javascript
+'use strict';
+
+const cookie = require('@fastify/cookie');
 
 app.register(cookie, {
   secret: process.env.COOKIE_SECRET,
@@ -320,7 +332,7 @@ app.get('/profile', async (request) => {
 
 Validate and sanitize input:
 
-```typescript
+```javascript
 // Schema-based validation protects against injection
 app.post('/users', {
   schema: {
@@ -350,7 +362,9 @@ app.post('/users', {
 
 Restrict access by IP:
 
-```typescript
+```javascript
+'use strict';
+
 const allowedIps = new Set([
   '192.168.1.0/24',
   '10.0.0.0/8',
@@ -366,7 +380,7 @@ app.addHook('onRequest', async (request, reply) => {
   }
 });
 
-function isIpAllowed(ip: string, allowed: Set<string>): boolean {
+function isIpAllowed(ip, allowed) {
   // Implement IP/CIDR matching
   for (const range of allowed) {
     if (ipInRange(ip, range)) return true;
@@ -379,13 +393,17 @@ function isIpAllowed(ip: string, allowed: Set<string>): boolean {
 
 Configure for reverse proxy environments:
 
-```typescript
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+
 const app = Fastify({
   trustProxy: true, // Trust X-Forwarded-* headers
 });
 
 // Or specific proxy configuration
-const app = Fastify({
+const app2 = Fastify({
   trustProxy: ['127.0.0.1', '10.0.0.0/8'],
 });
 
@@ -402,7 +420,7 @@ app.get('/ip', async (request) => {
 
 Force HTTPS in production:
 
-```typescript
+```javascript
 app.addHook('onRequest', async (request, reply) => {
   if (
     process.env.NODE_ENV === 'production' &&
@@ -416,11 +434,13 @@ app.addHook('onRequest', async (request, reply) => {
 
 ## Security Best Practices Summary
 
-```typescript
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
-import helmet from '@fastify/helmet';
-import rateLimit from '@fastify/rate-limit';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const cors = require('@fastify/cors');
+const helmet = require('@fastify/helmet');
+const rateLimit = require('@fastify/rate-limit');
 
 const app = Fastify({
   trustProxy: true,

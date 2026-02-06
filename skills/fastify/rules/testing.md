@@ -11,10 +11,12 @@ metadata:
 
 Fastify's `inject()` method simulates HTTP requests without network overhead:
 
-```typescript
-import { describe, it, before, after } from 'node:test';
-import Fastify from 'fastify';
-import { buildApp } from './app.js';
+```javascript
+'use strict';
+
+const { describe, it, before, after } = require('node:test');
+const Fastify = require('fastify');
+const { buildApp } = require('./app.js');
 
 describe('User API', () => {
   let app;
@@ -64,7 +66,7 @@ describe('User API', () => {
 
 Test authenticated endpoints:
 
-```typescript
+```javascript
 describe('Protected Routes', () => {
   let app;
   let authToken;
@@ -118,7 +120,7 @@ describe('Protected Routes', () => {
 
 Test routes with query strings:
 
-```typescript
+```javascript
 it('should filter users by status', async (t) => {
   const response = await app.inject({
     method: 'GET',
@@ -150,7 +152,7 @@ it('should search users', async (t) => {
 
 Test routes with path parameters:
 
-```typescript
+```javascript
 it('should return user by id', async (t) => {
   const userId = 'user-123';
 
@@ -177,7 +179,7 @@ it('should return 404 for non-existent user', async (t) => {
 
 Test schema validation:
 
-```typescript
+```javascript
 describe('Validation', () => {
   it('should reject invalid email', async (t) => {
     const response = await app.inject({
@@ -223,9 +225,11 @@ describe('Validation', () => {
 
 Test multipart form data:
 
-```typescript
-import { createReadStream } from 'node:fs';
-import FormData from 'form-data';
+```javascript
+'use strict';
+
+const { createReadStream } = require('node:fs');
+const FormData = require('form-data');
 
 it('should upload file', async (t) => {
   const form = new FormData();
@@ -248,7 +252,7 @@ it('should upload file', async (t) => {
 
 Test streaming responses:
 
-```typescript
+```javascript
 it('should stream large file', async (t) => {
   const response = await app.inject({
     method: 'GET',
@@ -264,8 +268,10 @@ it('should stream large file', async (t) => {
 
 Mock external services and databases:
 
-```typescript
-import { describe, it, before, after, mock } from 'node:test';
+```javascript
+'use strict';
+
+const { describe, it, before, after, mock } = require('node:test');
 
 describe('User Service', () => {
   let app;
@@ -288,7 +294,7 @@ describe('User Service', () => {
 
     app = Fastify();
     app.decorate('db', mockDb);
-    app.register(import('./routes/users.js'));
+    app.register(require('./routes/users.js'));
     await app.ready();
   });
 
@@ -312,10 +318,12 @@ describe('User Service', () => {
 
 Test plugins independently:
 
-```typescript
-import { describe, it, before, after } from 'node:test';
-import Fastify from 'fastify';
-import cachePlugin from './plugins/cache.js';
+```javascript
+'use strict';
+
+const { describe, it, before, after } = require('node:test');
+const Fastify = require('fastify');
+const cachePlugin = require('./plugins/cache.js');
 
 describe('Cache Plugin', () => {
   let app;
@@ -347,7 +355,7 @@ describe('Cache Plugin', () => {
 
 Test hook behavior:
 
-```typescript
+```javascript
 describe('Hooks', () => {
   it('should add request id header', async (t) => {
     const response = await app.inject({
@@ -369,7 +377,7 @@ describe('Hooks', () => {
       },
     });
 
-    app.register(import('./app.js'));
+    app.register(require('./app.js'));
     await app.ready();
 
     await app.inject({ method: 'GET', url: '/health' });
@@ -387,27 +395,23 @@ describe('Hooks', () => {
 
 Create a reusable test app builder:
 
-```typescript
-// test/helper.ts
-import Fastify from 'fastify';
-import type { FastifyInstance } from 'fastify';
+```javascript
+// test/helper.js
+'use strict';
 
-interface TestContext {
-  app: FastifyInstance;
-  inject: FastifyInstance['inject'];
-}
+const Fastify = require('fastify');
 
-export async function buildTestApp(options = {}): Promise<TestContext> {
+async function buildTestApp(options = {}) {
   const app = Fastify({
     logger: false, // Disable logging in tests
     ...options,
   });
 
   // Register plugins
-  app.register(import('../src/plugins/database.js'), {
+  app.register(require('../src/plugins/database.js'), {
     connectionString: process.env.TEST_DATABASE_URL,
   });
-  app.register(import('../src/routes/index.js'));
+  app.register(require('../src/routes/index.js'));
 
   await app.ready();
 
@@ -417,9 +421,11 @@ export async function buildTestApp(options = {}): Promise<TestContext> {
   };
 }
 
+module.exports = { buildTestApp };
+
 // Usage in tests
 describe('API Tests', () => {
-  let ctx: TestContext;
+  let ctx;
 
   before(async () => {
     ctx = await buildTestApp();
@@ -443,7 +449,7 @@ describe('API Tests', () => {
 
 Use transactions for test isolation:
 
-```typescript
+```javascript
 describe('Database Integration', () => {
   let app;
   let transaction;
@@ -483,11 +489,11 @@ describe('Database Integration', () => {
 
 Structure tests for parallel execution:
 
-```typescript
+```javascript
 // Tests run in parallel by default with node:test
 // Use separate app instances or proper isolation
 
-import { describe, it } from 'node:test';
+const { describe, it } = require('node:test');
 
 describe('User API', async () => {
   // Each test suite gets its own app instance
@@ -522,11 +528,8 @@ describe('Post API', async () => {
 # Run all tests
 node --test
 
-# Run with TypeScript
-node --test src/**/*.test.ts
-
 # Run specific file
-node --test src/routes/users.test.ts
+node --test src/routes/users.test.js
 
 # With coverage
 node --test --experimental-test-coverage

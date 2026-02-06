@@ -11,8 +11,10 @@ metadata:
 
 Fastify has a built-in error handler. Thrown errors automatically become HTTP responses:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({ logger: true });
 
@@ -30,10 +32,12 @@ app.get('/users/:id', async (request) => {
 
 ## Custom Error Classes
 
-Use `@fastify/error` for creating typed errors:
+Use `@fastify/error` for creating custom errors:
 
-```typescript
-import createError from '@fastify/error';
+```javascript
+'use strict';
+
+const createError = require('@fastify/error');
 
 const NotFoundError = createError('NOT_FOUND', '%s not found', 404);
 const UnauthorizedError = createError('UNAUTHORIZED', 'Authentication required', 401);
@@ -63,13 +67,14 @@ app.post('/users', async (request) => {
 
 Implement a centralized error handler:
 
-```typescript
-import Fastify from 'fastify';
-import type { FastifyError, FastifyRequest, FastifyReply } from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({ logger: true });
 
-app.setErrorHandler((error: FastifyError, request: FastifyRequest, reply: FastifyReply) => {
+app.setErrorHandler((error, request, reply) => {
   // Log the error
   request.log.error({ err: error }, 'Request error');
 
@@ -104,7 +109,7 @@ app.setErrorHandler((error: FastifyError, request: FastifyRequest, reply: Fastif
 
 Define consistent error response schemas:
 
-```typescript
+```javascript
 app.addSchema({
   $id: 'httpError',
   type: 'object',
@@ -147,8 +152,10 @@ app.get('/users/:id', {
 
 Use `@fastify/sensible` for standard HTTP errors:
 
-```typescript
-import fastifySensible from '@fastify/sensible';
+```javascript
+'use strict';
+
+const fastifySensible = require('@fastify/sensible');
 
 app.register(fastifySensible);
 
@@ -184,7 +191,7 @@ app.get('/users/:id', async (request, reply) => {
 
 Errors in async handlers are automatically caught:
 
-```typescript
+```javascript
 // Errors are automatically caught and passed to error handler
 app.get('/users', async (request) => {
   const users = await db.users.findAll(); // If this throws, error handler catches it
@@ -214,7 +221,7 @@ app.get('/users/:id', async (request, reply) => {
 
 Errors in hooks are handled the same way:
 
-```typescript
+```javascript
 app.addHook('onRequest', async (request, reply) => {
   const token = request.headers.authorization;
   if (!token) {
@@ -242,7 +249,7 @@ app.addHook('onRequest', async (request, reply) => {
 
 Customize the 404 response:
 
-```typescript
+```javascript
 app.setNotFoundHandler(async (request, reply) => {
   return reply.code(404).send({
     statusCode: 404,
@@ -265,8 +272,10 @@ app.setNotFoundHandler({
 
 Wrap external errors with context:
 
-```typescript
-import createError from '@fastify/error';
+```javascript
+'use strict';
+
+const createError = require('@fastify/error');
 
 const DatabaseError = createError('DATABASE_ERROR', 'Database operation failed: %s', 500);
 const ExternalServiceError = createError('EXTERNAL_SERVICE_ERROR', 'External service failed: %s', 502);
@@ -292,7 +301,7 @@ app.get('/weather', async (request) => {
 
 Customize validation error format:
 
-```typescript
+```javascript
 app.setErrorHandler((error, request, reply) => {
   if (error.validation) {
     const details = error.validation.map((err) => {
@@ -324,7 +333,7 @@ app.setErrorHandler((error, request, reply) => {
 
 Preserve error chains for debugging:
 
-```typescript
+```javascript
 app.get('/complex-operation', async (request) => {
   try {
     await step1();
@@ -361,7 +370,7 @@ app.setErrorHandler((error, request, reply) => {
 
 Set error handlers at the plugin level:
 
-```typescript
+```javascript
 app.register(async function apiRoutes(fastify) {
   // This error handler only applies to routes in this plugin
   fastify.setErrorHandler((error, request, reply) => {
@@ -385,7 +394,7 @@ app.register(async function apiRoutes(fastify) {
 
 Handle errors gracefully without crashing:
 
-```typescript
+```javascript
 app.get('/resilient', async (request, reply) => {
   const results = await Promise.allSettled([
     fetchPrimaryData(),

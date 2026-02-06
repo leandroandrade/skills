@@ -11,12 +11,12 @@ metadata:
 
 Use [mnemoist](https://github.com/Yomguithereal/mnemonist) for synchronous memoization:
 
-```typescript
-import { LRUCache } from 'mnemonist';
+```javascript
+const { LRUCache } = require('mnemonist');
 
-const cache = new LRUCache<string, User>(1000);
+const cache = new LRUCache(1000);
 
-function getUser(id: string): User | undefined {
+function getUser(id) {
   if (cache.has(id)) {
     return cache.get(id);
   }
@@ -30,8 +30,8 @@ function getUser(id: string): User | undefined {
 
 Use [async-cache-dedupe](https://github.com/mcollina/async-cache-dedupe) for async operations with request deduplication:
 
-```typescript
-import { createCache } from 'async-cache-dedupe';
+```javascript
+const { createCache } = require('async-cache-dedupe');
 
 const cache = createCache({
   ttl: 60, // seconds
@@ -39,14 +39,14 @@ const cache = createCache({
   storage: { type: 'memory' },
 });
 
-cache.define('getUser', async (id: string) => {
+cache.define('getUser', async (id) => {
   return await db.users.findById(id);
 });
 
 cache.define('getPost', {
   ttl: 300,
   stale: 30,
-}, async (id: string) => {
+}, async (id) => {
   return await db.posts.findById(id);
 });
 
@@ -59,7 +59,7 @@ const post = await cache.getPost('456');
 
 async-cache-dedupe automatically deduplicates concurrent requests:
 
-```typescript
+```javascript
 // These three concurrent calls result in only ONE database query
 const [user1, user2, user3] = await Promise.all([
   cache.getUser('123'),
@@ -72,9 +72,9 @@ const [user1, user2, user3] = await Promise.all([
 
 For distributed caching across multiple instances:
 
-```typescript
-import { createCache } from 'async-cache-dedupe';
-import Redis from 'ioredis';
+```javascript
+const { createCache } = require('async-cache-dedupe');
+const Redis = require('ioredis');
 
 const redis = new Redis();
 
@@ -91,10 +91,10 @@ const cache = createCache({
 
 Use [lru-cache](https://github.com/isaacs/node-lru-cache) for bounded in-memory caching:
 
-```typescript
-import { LRUCache } from 'lru-cache';
+```javascript
+const { LRUCache } = require('lru-cache');
 
-const cache = new LRUCache<string, User>({
+const cache = new LRUCache({
   max: 500,           // Maximum items
   ttl: 1000 * 60 * 5, // 5 minutes
   updateAgeOnGet: true,
@@ -108,7 +108,7 @@ const cached = cache.get('user:123');
 
 ### Time-Based Expiration
 
-```typescript
+```javascript
 const cache = createCache({
   ttl: 60,    // Fresh for 60 seconds
   stale: 30,  // Serve stale for 30 more seconds while revalidating
@@ -117,7 +117,7 @@ const cache = createCache({
 
 ### Manual Invalidation
 
-```typescript
+```javascript
 // Invalidate single entry
 await cache.invalidate('getUser', '123');
 
@@ -130,7 +130,7 @@ await cache.clear();
 
 ### Reference-Based Invalidation
 
-```typescript
+```javascript
 const cache = createCache({
   ttl: 60,
   storage: { type: 'memory' },
@@ -138,13 +138,13 @@ const cache = createCache({
 
 cache.define('getUser', {
   references: (args, key, result) => [`user:${result.id}`],
-}, async (id: string) => {
+}, async (id) => {
   return await db.users.findById(id);
 });
 
 cache.define('getUserPosts', {
   references: (args, key, result) => [`user:${args[0]}`],
-}, async (userId: string) => {
+}, async (userId) => {
   return await db.posts.findByUserId(userId);
 });
 

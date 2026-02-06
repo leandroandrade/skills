@@ -11,10 +11,12 @@ metadata:
 
 **Always use `env-schema` for configuration validation.** It provides JSON Schema validation for environment variables with sensible defaults.
 
-```typescript
-import Fastify from 'fastify';
-import envSchema from 'env-schema';
-import { Type, type Static } from '@sinclair/typebox';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const envSchema = require('env-schema');
+const { Type } = require('@sinclair/typebox');
 
 const schema = Type.Object({
   PORT: Type.Number({ default: 3000 }),
@@ -31,9 +33,7 @@ const schema = Type.Object({
   ], { default: 'info' }),
 });
 
-type Config = Static<typeof schema>;
-
-const config = envSchema<Config>({
+const config = envSchema({
   schema,
   dotenv: true, // Load from .env file
 });
@@ -44,12 +44,6 @@ const app = Fastify({
 
 app.decorate('config', config);
 
-declare module 'fastify' {
-  interface FastifyInstance {
-    config: Config;
-  }
-}
-
 await app.listen({ port: config.PORT, host: config.HOST });
 ```
 
@@ -57,10 +51,12 @@ await app.listen({ port: config.PORT, host: config.HOST });
 
 Encapsulate configuration in a plugin for reuse:
 
-```typescript
-import fp from 'fastify-plugin';
-import envSchema from 'env-schema';
-import { Type, type Static } from '@sinclair/typebox';
+```javascript
+'use strict';
+
+const fp = require('fastify-plugin');
+const envSchema = require('env-schema');
+const { Type } = require('@sinclair/typebox');
 
 const schema = Type.Object({
   PORT: Type.Number({ default: 3000 }),
@@ -70,16 +66,8 @@ const schema = Type.Object({
   LOG_LEVEL: Type.String({ default: 'info' }),
 });
 
-type Config = Static<typeof schema>;
-
-declare module 'fastify' {
-  interface FastifyInstance {
-    config: Config;
-  }
-}
-
-export default fp(async function configPlugin(fastify) {
-  const config = envSchema<Config>({
+module.exports = fp(async function configPlugin(fastify) {
+  const config = envSchema({
     schema,
     dotenv: true,
   });
@@ -94,7 +82,9 @@ export default fp(async function configPlugin(fastify) {
 
 Handle secrets securely:
 
-```typescript
+```javascript
+'use strict';
+
 // Never log secrets
 const app = Fastify({
   logger: {
@@ -111,8 +101,10 @@ const app = Fastify({
 
 Implement feature flags via environment variables:
 
-```typescript
-import { Type, type Static } from '@sinclair/typebox';
+```javascript
+'use strict';
+
+const { Type } = require('@sinclair/typebox');
 
 const schema = Type.Object({
   // ... other config
@@ -120,9 +112,7 @@ const schema = Type.Object({
   FEATURE_BETA_API: Type.Boolean({ default: false }),
 });
 
-type Config = Static<typeof schema>;
-
-const config = envSchema<Config>({ schema, dotenv: true });
+const config = envSchema({ schema, dotenv: true });
 
 // Use in routes
 app.get('/dashboard', async (request) => {
@@ -137,13 +127,13 @@ app.get('/dashboard', async (request) => {
 
 ### NEVER use configuration files
 
-```typescript
-// ❌ NEVER DO THIS - configuration files are an antipattern
-import config from './config/production.json';
+```javascript
+// NEVER DO THIS - configuration files are an antipattern
+const config = require('./config/production.json');
 
-// ❌ NEVER DO THIS - per-environment config files
+// NEVER DO THIS - per-environment config files
 const env = process.env.NODE_ENV || 'development';
-const config = await import(`./config/${env}.js`);
+const config = require(`./config/${env}.js`);
 ```
 
 Configuration files lead to:
@@ -154,8 +144,8 @@ Configuration files lead to:
 
 ### NEVER use per-environment configuration
 
-```typescript
-// ❌ NEVER DO THIS
+```javascript
+// NEVER DO THIS
 const configs = {
   development: { logLevel: 'debug' },
   production: { logLevel: 'info' },
@@ -168,13 +158,13 @@ Instead, use a single configuration source (environment variables) with sensible
 
 ### Use specific environment variables, not NODE_ENV
 
-```typescript
-// ❌ AVOID checking NODE_ENV
+```javascript
+// AVOID checking NODE_ENV
 if (process.env.NODE_ENV === 'production') {
   // do something
 }
 
-// ✅ BETTER - use explicit feature flags or configuration
+// BETTER - use explicit feature flags or configuration
 if (app.config.ENABLE_DETAILED_LOGGING) {
   // do something
 }
@@ -184,13 +174,10 @@ if (app.config.ENABLE_DETAILED_LOGGING) {
 
 For configuration that needs to change without restart, fetch from an external service:
 
-```typescript
-interface DynamicConfig {
-  rateLimit: number;
-  maintenanceMode: boolean;
-}
+```javascript
+'use strict';
 
-let dynamicConfig: DynamicConfig = {
+let dynamicConfig = {
   rateLimit: 100,
   maintenanceMode: false,
 };

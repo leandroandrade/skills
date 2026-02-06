@@ -387,7 +387,7 @@ const contents = await Promise.all(
 );  // EMFILE!
 
 // GOOD: Limit concurrency
-import pLimit from 'p-limit';
+const pLimit = require('p-limit');
 const limit = pLimit(100);
 
 const contents = await Promise.all(

@@ -12,7 +12,7 @@ metadata:
 Use [@platformatic/flame](https://github.com/platformatic/flame) for CPU profiling with flame graph visualization:
 
 ```bash
-npx @platformatic/flame app.ts
+npx @platformatic/flame app.js
 ```
 
 This starts your application with profiling enabled and generates an interactive flame graph.
@@ -22,7 +22,7 @@ This starts your application with profiling enabled and generates an interactive
 flame can output markdown reports suitable for AI-assisted performance analysis:
 
 ```bash
-npx @platformatic/flame --output markdown app.ts
+npx @platformatic/flame --output markdown app.js
 ```
 
 This enables a fully agentic workflow where you can:
@@ -32,17 +32,21 @@ This enables a fully agentic workflow where you can:
 
 ### Programmatic Usage
 
-```typescript
-import { profile } from '@platformatic/flame';
+```javascript
+const { profile } = require('@platformatic/flame');
 
-const stop = await profile({
-  outputFile: 'profile.html',
-});
+async function main() {
+  const stop = await profile({
+    outputFile: 'profile.html',
+  });
 
-// Run your workload
-await runBenchmark();
+  // Run your workload
+  await runBenchmark();
 
-await stop();
+  await stop();
+}
+
+main();
 ```
 
 ## Load Testing Tools
@@ -71,17 +75,21 @@ Options:
 
 ### Programmatic autocannon
 
-```typescript
-import autocannon from 'autocannon';
+```javascript
+const autocannon = require('autocannon');
 
-const result = await autocannon({
-  url: 'http://localhost:3000',
-  connections: 100,
-  duration: 30,
-  pipelining: 10,
-});
+async function main() {
+  const result = await autocannon({
+    url: 'http://localhost:3000',
+    connections: 100,
+    duration: 30,
+    pipelining: 10,
+  });
 
-console.log(autocannon.printResult(result));
+  console.log(autocannon.printResult(result));
+}
+
+main();
 ```
 
 ### wrk

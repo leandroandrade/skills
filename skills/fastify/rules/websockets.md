@@ -11,9 +11,11 @@ metadata:
 
 Add WebSocket support to Fastify:
 
-```typescript
-import Fastify from 'fastify';
-import websocket from '@fastify/websocket';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const websocket = require('@fastify/websocket');
 
 const app = Fastify();
 
@@ -37,14 +39,14 @@ app.get('/ws', { websocket: true }, (socket, request) => {
   });
 });
 
-await app.listen({ port: 3000 });
+app.listen({ port: 3000 });
 ```
 
 ## WebSocket with Hooks
 
 Use Fastify hooks with WebSocket routes:
 
-```typescript
+```javascript
 app.register(async function wsRoutes(fastify) {
   // This hook runs before WebSocket upgrade
   fastify.addHook('preValidation', async (request, reply) => {
@@ -70,7 +72,7 @@ app.register(async function wsRoutes(fastify) {
 
 Configure WebSocket server options:
 
-```typescript
+```javascript
 app.register(websocket, {
   options: {
     maxPayload: 1048576, // 1MB max message size
@@ -93,8 +95,10 @@ app.register(websocket, {
 
 Broadcast messages to connected clients:
 
-```typescript
-const clients = new Set<WebSocket>();
+```javascript
+'use strict';
+
+const clients = new Set();
 
 app.get('/ws', { websocket: true }, (socket, request) => {
   clients.add(socket);
@@ -131,24 +135,29 @@ app.post('/broadcast', async (request) => {
 
 Organize connections into rooms:
 
-```typescript
-const rooms = new Map<string, Set<WebSocket>>();
+```javascript
+'use strict';
 
-function joinRoom(socket: WebSocket, roomId: string) {
+const rooms = new Map();
+
+function joinRoom(socket, roomId) {
   if (!rooms.has(roomId)) {
     rooms.set(roomId, new Set());
   }
-  rooms.get(roomId)!.add(socket);
+  rooms.get(roomId).add(socket);
 }
 
-function leaveRoom(socket: WebSocket, roomId: string) {
-  rooms.get(roomId)?.delete(socket);
-  if (rooms.get(roomId)?.size === 0) {
-    rooms.delete(roomId);
+function leaveRoom(socket, roomId) {
+  const room = rooms.get(roomId);
+  if (room) {
+    room.delete(socket);
+    if (room.size === 0) {
+      rooms.delete(roomId);
+    }
   }
 }
 
-function broadcastToRoom(roomId: string, message: string, exclude?: WebSocket) {
+function broadcastToRoom(roomId, message, exclude) {
   const room = rooms.get(roomId);
   if (!room) return;
 
@@ -160,7 +169,7 @@ function broadcastToRoom(roomId: string, message: string, exclude?: WebSocket) {
 }
 
 app.get('/ws/:roomId', { websocket: true }, (socket, request) => {
-  const { roomId } = request.params as { roomId: string };
+  const { roomId } = request.params;
 
   joinRoom(socket, roomId);
 
@@ -178,20 +187,16 @@ app.get('/ws/:roomId', { websocket: true }, (socket, request) => {
 
 Use JSON for structured messages:
 
-```typescript
-interface WSMessage {
-  type: string;
-  payload?: unknown;
-  id?: string;
-}
+```javascript
+'use strict';
 
 app.get('/ws', { websocket: true }, (socket, request) => {
-  function send(message: WSMessage) {
+  function send(message) {
     socket.send(JSON.stringify(message));
   }
 
   socket.on('message', (raw) => {
-    let message: WSMessage;
+    let message;
 
     try {
       message = JSON.parse(raw.toString());
@@ -225,9 +230,11 @@ app.get('/ws', { websocket: true }, (socket, request) => {
 
 Keep connections alive:
 
-```typescript
+```javascript
+'use strict';
+
 const HEARTBEAT_INTERVAL = 30000;
-const clients = new Map<WebSocket, { isAlive: boolean }>();
+const clients = new Map();
 
 app.get('/ws', { websocket: true }, (socket, request) => {
   clients.set(socket, { isAlive: true });
@@ -261,7 +268,7 @@ setInterval(() => {
 
 Authenticate WebSocket connections:
 
-```typescript
+```javascript
 app.get('/ws', {
   websocket: true,
   preValidation: async (request, reply) => {
@@ -292,7 +299,7 @@ app.get('/ws', {
 
 Handle WebSocket errors properly:
 
-```typescript
+```javascript
 app.get('/ws', { websocket: true }, (socket, request) => {
   socket.on('error', (error) => {
     request.log.error({ err: error }, 'WebSocket error');
@@ -318,10 +325,12 @@ app.get('/ws', { websocket: true }, (socket, request) => {
 
 Limit message frequency:
 
-```typescript
-const rateLimits = new Map<WebSocket, { count: number; resetAt: number }>();
+```javascript
+'use strict';
 
-function checkRateLimit(socket: WebSocket, limit: number, window: number): boolean {
+const rateLimits = new Map();
+
+function checkRateLimit(socket, limit, window) {
   const now = Date.now();
   let state = rateLimits.get(socket);
 
@@ -359,10 +368,12 @@ app.get('/ws', { websocket: true }, (socket, request) => {
 
 Close WebSocket connections on shutdown:
 
-```typescript
-import closeWithGrace from 'close-with-grace';
+```javascript
+'use strict';
 
-const connections = new Set<WebSocket>();
+const closeWithGrace = require('close-with-grace');
+
+const connections = new Set();
 
 app.get('/ws', { websocket: true }, (socket, request) => {
   connections.add(socket);
@@ -389,7 +400,7 @@ closeWithGrace({ delay: 5000 }, async ({ signal }) => {
 
 Use WebSocket for streaming data:
 
-```typescript
+```javascript
 app.get('/ws/stream', { websocket: true }, async (socket, request) => {
   const stream = createDataStream();
 

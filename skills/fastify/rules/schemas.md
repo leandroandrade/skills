@@ -7,17 +7,19 @@ metadata:
 
 # JSON Schema Validation
 
-## Use TypeBox for Type-Safe Schemas
+## Use TypeBox for Schemas
 
-**Prefer TypeBox for defining schemas.** It provides TypeScript types automatically and compiles to JSON Schema:
+**Prefer TypeBox for defining schemas.** It compiles to JSON Schema and provides a convenient builder API:
 
-```typescript
-import Fastify from 'fastify';
-import { Type, type Static } from '@sinclair/typebox';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const { Type } = require('@sinclair/typebox');
 
 const app = Fastify();
 
-// Define schema with TypeBox - get TypeScript types for free
+// Define schema with TypeBox
 const CreateUserBody = Type.Object({
   name: Type.String({ minLength: 1, maxLength: 100 }),
   email: Type.String({ format: 'email' }),
@@ -31,14 +33,7 @@ const UserResponse = Type.Object({
   createdAt: Type.String({ format: 'date-time' }),
 });
 
-// TypeScript types are derived automatically
-type CreateUserBodyType = Static<typeof CreateUserBody>;
-type UserResponseType = Static<typeof UserResponse>;
-
-app.post<{
-  Body: CreateUserBodyType;
-  Reply: UserResponseType;
-}>('/users', {
+app.post('/users', {
   schema: {
     body: CreateUserBody,
     response: {
@@ -46,7 +41,6 @@ app.post<{
     },
   },
 }, async (request, reply) => {
-  // request.body is fully typed as CreateUserBodyType
   const user = await createUser(request.body);
   reply.code(201);
   return user;
@@ -55,8 +49,10 @@ app.post<{
 
 ## TypeBox Common Patterns
 
-```typescript
-import { Type, type Static } from '@sinclair/typebox';
+```javascript
+'use strict';
+
+const { Type } = require('@sinclair/typebox');
 
 // Enums
 const Status = Type.Union([
@@ -94,8 +90,10 @@ const Metadata = Type.Record(Type.String(), Type.Unknown());
 
 ## Register TypeBox Schemas Globally
 
-```typescript
-import { Type, type Static } from '@sinclair/typebox';
+```javascript
+'use strict';
+
+const { Type } = require('@sinclair/typebox');
 
 // Define shared schemas
 const ErrorResponse = Type.Object({
@@ -128,8 +126,10 @@ app.get('/items', {
 
 You can also use plain JSON Schema directly:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify();
 
@@ -168,7 +168,9 @@ app.post('/users', { schema: createUserSchema }, async (request, reply) => {
 
 Validate different parts of the request:
 
-```typescript
+```javascript
+'use strict';
+
 const fullRequestSchema = {
   // URL parameters
   params: {
@@ -214,7 +216,9 @@ app.put('/resources/:id', { schema: fullRequestSchema }, handler);
 
 Define reusable schemas with `$id` and reference them with `$ref`:
 
-```typescript
+```javascript
+'use strict';
+
 // Add shared schemas to Fastify
 app.addSchema({
   $id: 'user',
@@ -279,7 +283,9 @@ app.get('/users/:id', {
 
 Define schemas for array responses:
 
-```typescript
+```javascript
+'use strict';
+
 app.addSchema({
   $id: 'userList',
   type: 'object',
@@ -314,8 +320,10 @@ app.get('/users', {
 
 Add custom validation formats:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   ajv: {
@@ -344,9 +352,10 @@ app.addSchema({
 
 Add custom validation keywords:
 
-```typescript
-import Fastify from 'fastify';
-import Ajv from 'ajv';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   ajv: {
@@ -355,7 +364,7 @@ const app = Fastify({
         {
           keyword: 'isEven',
           type: 'number',
-          validate: (schema: boolean, data: number) => {
+          validate: function (schema, data) {
             if (schema) {
               return data % 2 === 0;
             }
@@ -385,7 +394,9 @@ app.post('/numbers', {
 
 Fastify coerces types by default for query strings and params:
 
-```typescript
+```javascript
+'use strict';
+
 // Query string "?page=5&active=true" becomes:
 // { page: 5, active: true } (number and boolean, not strings)
 
@@ -410,7 +421,9 @@ app.get('/items', {
 
 Customize validation error responses:
 
-```typescript
+```javascript
+'use strict';
+
 app.setErrorHandler((error, request, reply) => {
   if (error.validation) {
     reply.code(400).send({
@@ -437,8 +450,10 @@ app.setErrorHandler((error, request, reply) => {
 
 Configure the Ajv schema compiler:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   ajv: {
@@ -459,7 +474,9 @@ const app = Fastify({
 
 Handle nullable fields properly:
 
-```typescript
+```javascript
+'use strict';
+
 app.addSchema({
   $id: 'profile',
   type: 'object',
@@ -480,7 +497,9 @@ app.addSchema({
 
 Use if/then/else for conditional validation:
 
-```typescript
+```javascript
+'use strict';
+
 app.addSchema({
   $id: 'payment',
   type: 'object',
@@ -506,9 +525,11 @@ app.addSchema({
 
 Organize schemas in a dedicated file:
 
-```typescript
-// schemas/index.ts
-export const schemas = [
+```javascript
+// schemas/index.js
+'use strict';
+
+const schemas = [
   {
     $id: 'user',
     type: 'object',
@@ -529,8 +550,12 @@ export const schemas = [
   },
 ];
 
-// app.ts
-import { schemas } from './schemas/index.js';
+module.exports = { schemas };
+
+// app.js
+'use strict';
+
+const { schemas } = require('./schemas/index.js');
 
 for (const schema of schemas) {
   app.addSchema(schema);
@@ -541,9 +566,11 @@ for (const schema of schemas) {
 
 Schemas work directly with @fastify/swagger:
 
-```typescript
-import fastifySwagger from '@fastify/swagger';
-import fastifySwaggerUi from '@fastify/swagger-ui';
+```javascript
+'use strict';
+
+const fastifySwagger = require('@fastify/swagger');
+const fastifySwaggerUi = require('@fastify/swagger-ui');
 
 app.register(fastifySwagger, {
   openapi: {
@@ -565,7 +592,9 @@ app.register(fastifySwaggerUi, {
 
 Response schemas enable fast-json-stringify for serialization:
 
-```typescript
+```javascript
+'use strict';
+
 // With response schema - uses fast-json-stringify (faster)
 app.get('/users', {
   schema: {

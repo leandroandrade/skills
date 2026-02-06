@@ -13,9 +13,11 @@ Always use the official Fastify database plugins from the `@fastify` organizatio
 
 ## PostgreSQL with @fastify/postgres
 
-```typescript
-import Fastify from 'fastify';
-import fastifyPostgres from '@fastify/postgres';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const fastifyPostgres = require('@fastify/postgres');
 
 const app = Fastify({ logger: true });
 
@@ -72,9 +74,11 @@ app.post('/transfer', async (request) => {
 
 ## MySQL with @fastify/mysql
 
-```typescript
-import Fastify from 'fastify';
-import fastifyMysql from '@fastify/mysql';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const fastifyMysql = require('@fastify/mysql');
 
 const app = Fastify({ logger: true });
 
@@ -96,9 +100,11 @@ app.get('/users', async (request) => {
 
 ## MongoDB with @fastify/mongodb
 
-```typescript
-import Fastify from 'fastify';
-import fastifyMongo from '@fastify/mongodb';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const fastifyMongo = require('@fastify/mongodb');
 
 const app = Fastify({ logger: true });
 
@@ -132,9 +138,11 @@ app.post('/users', async (request) => {
 
 ## Redis with @fastify/redis
 
-```typescript
-import Fastify from 'fastify';
-import fastifyRedis from '@fastify/redis';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const fastifyRedis = require('@fastify/redis');
 
 const app = Fastify({ logger: true });
 
@@ -166,12 +174,14 @@ app.get('/data/:key', async (request) => {
 
 Encapsulate database access in a plugin:
 
-```typescript
-// plugins/database.ts
-import fp from 'fastify-plugin';
-import fastifyPostgres from '@fastify/postgres';
+```javascript
+// plugins/database.js
+'use strict';
 
-export default fp(async function databasePlugin(fastify) {
+const fp = require('fastify-plugin');
+const fastifyPostgres = require('@fastify/postgres');
+
+module.exports = fp(async function databasePlugin(fastify) {
   await fastify.register(fastifyPostgres, {
     connectionString: fastify.config.DATABASE_URL,
   });
@@ -195,19 +205,13 @@ export default fp(async function databasePlugin(fastify) {
 
 Abstract database access with repositories:
 
-```typescript
-// repositories/user.repository.ts
-import type { FastifyInstance } from 'fastify';
+```javascript
+// repositories/user.repository.js
+'use strict';
 
-export interface User {
-  id: string;
-  email: string;
-  name: string;
-}
-
-export function createUserRepository(app: FastifyInstance) {
+function createUserRepository(app) {
   return {
-    async findById(id: string): Promise<User | null> {
+    async findById(id) {
       const { rows } = await app.pg.query(
         'SELECT * FROM users WHERE id = $1',
         [id],
@@ -215,7 +219,7 @@ export function createUserRepository(app: FastifyInstance) {
       return rows[0] || null;
     },
 
-    async findByEmail(email: string): Promise<User | null> {
+    async findByEmail(email) {
       const { rows } = await app.pg.query(
         'SELECT * FROM users WHERE email = $1',
         [email],
@@ -223,7 +227,7 @@ export function createUserRepository(app: FastifyInstance) {
       return rows[0] || null;
     },
 
-    async create(data: Omit<User, 'id'>): Promise<User> {
+    async create(data) {
       const { rows } = await app.pg.query(
         'INSERT INTO users (email, name) VALUES ($1, $2) RETURNING *',
         [data.email, data.name],
@@ -231,7 +235,7 @@ export function createUserRepository(app: FastifyInstance) {
       return rows[0];
     },
 
-    async update(id: string, data: Partial<User>): Promise<User | null> {
+    async update(id, data) {
       const fields = Object.keys(data);
       const values = Object.values(data);
       const setClause = fields
@@ -245,7 +249,7 @@ export function createUserRepository(app: FastifyInstance) {
       return rows[0] || null;
     },
 
-    async delete(id: string): Promise<boolean> {
+    async delete(id) {
       const { rowCount } = await app.pg.query(
         'DELETE FROM users WHERE id = $1',
         [id],
@@ -255,11 +259,13 @@ export function createUserRepository(app: FastifyInstance) {
   };
 }
 
-// Usage in plugin
-import fp from 'fastify-plugin';
-import { createUserRepository } from './repositories/user.repository.js';
+module.exports = { createUserRepository };
 
-export default fp(async function repositoriesPlugin(fastify) {
+// Usage in plugin
+const fp = require('fastify-plugin');
+const { createUserRepository } = require('./repositories/user.repository.js');
+
+module.exports = fp(async function repositoriesPlugin(fastify) {
   fastify.decorate('repositories', {
     users: createUserRepository(fastify),
   });
@@ -273,9 +279,11 @@ export default fp(async function repositoriesPlugin(fastify) {
 
 Use transactions for test isolation:
 
-```typescript
-import { describe, it, beforeEach, afterEach } from 'node:test';
-import { build } from './app.js';
+```javascript
+'use strict';
+
+const { describe, it, beforeEach, afterEach } = require('node:test');
+const { build } = require('./app.js');
 
 describe('User API', () => {
   let app;
@@ -309,7 +317,7 @@ describe('User API', () => {
 
 Configure connection pools appropriately:
 
-```typescript
+```javascript
 app.register(fastifyPostgres, {
   connectionString: process.env.DATABASE_URL,
   // Pool configuration

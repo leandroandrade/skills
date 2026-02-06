@@ -11,12 +11,12 @@ metadata:
 
 Always use `pipeline` instead of `.pipe()` for proper error handling:
 
-```typescript
-import { pipeline } from 'node:stream/promises';
-import { createReadStream, createWriteStream } from 'node:fs';
-import { createGzip } from 'node:zlib';
+```javascript
+const { pipeline } = require('node:stream/promises');
+const { createReadStream, createWriteStream } = require('node:fs');
+const { createGzip } = require('node:zlib');
 
-async function compressFile(input: string, output: string): Promise<void> {
+async function compressFile(input, output) {
   await pipeline(
     createReadStream(input),
     createGzip(),
@@ -29,17 +29,17 @@ async function compressFile(input: string, output: string): Promise<void> {
 
 Use async generators for transformation:
 
-```typescript
-import { pipeline } from 'node:stream/promises';
-import { createReadStream, createWriteStream } from 'node:fs';
+```javascript
+const { pipeline } = require('node:stream/promises');
+const { createReadStream, createWriteStream } = require('node:fs');
 
-async function* toUpperCase(source: AsyncIterable<Buffer>): AsyncGenerator<string> {
+async function* toUpperCase(source) {
   for await (const chunk of source) {
     yield chunk.toString().toUpperCase();
   }
 }
 
-async function processFile(input: string, output: string): Promise<void> {
+async function processFile(input, output) {
   await pipeline(
     createReadStream(input),
     toUpperCase,
@@ -52,10 +52,10 @@ async function processFile(input: string, output: string): Promise<void> {
 
 Chain multiple async generators:
 
-```typescript
-import { pipeline } from 'node:stream/promises';
+```javascript
+const { pipeline } = require('node:stream/promises');
 
-async function* parseLines(source: AsyncIterable<Buffer>): AsyncGenerator<string> {
+async function* parseLines(source) {
   let buffer = '';
   for await (const chunk of source) {
     buffer += chunk.toString();
@@ -68,7 +68,7 @@ async function* parseLines(source: AsyncIterable<Buffer>): AsyncGenerator<string
   if (buffer) yield buffer;
 }
 
-async function* filterNonEmpty(source: AsyncIterable<string>): AsyncGenerator<string> {
+async function* filterNonEmpty(source) {
   for await (const line of source) {
     if (line.trim()) {
       yield line + '\n';
@@ -88,11 +88,11 @@ await pipeline(
 
 Use async iterators for consuming streams:
 
-```typescript
-import { createReadStream } from 'node:fs';
-import { createInterface } from 'node:readline';
+```javascript
+const { createReadStream } = require('node:fs');
+const { createInterface } = require('node:readline');
 
-async function processLines(filePath: string): Promise<void> {
+async function processLines(filePath) {
   const fileStream = createReadStream(filePath);
   const rl = createInterface({
     input: fileStream,
@@ -109,10 +109,10 @@ async function processLines(filePath: string): Promise<void> {
 
 Create readable streams from iterables:
 
-```typescript
-import { Readable } from 'node:stream';
+```javascript
+const { Readable } = require('node:stream');
 
-async function* generateData(): AsyncGenerator<string> {
+async function* generateData() {
   for (let i = 0; i < 100; i++) {
     yield JSON.stringify({ id: i, timestamp: Date.now() }) + '\n';
   }
@@ -125,14 +125,11 @@ const stream = Readable.from(generateData());
 
 Respect backpressure signals using `once` from events:
 
-```typescript
-import { Writable } from 'node:stream';
-import { once } from 'node:events';
+```javascript
+const { Writable } = require('node:stream');
+const { once } = require('node:events');
 
-async function writeData(
-  writable: Writable,
-  data: string[]
-): Promise<void> {
+async function writeData(writable, data) {
   for (const chunk of data) {
     const canContinue = writable.write(chunk);
     if (!canContinue) {
@@ -146,15 +143,15 @@ async function writeData(
 
 Use stream consumers for common operations:
 
-```typescript
-import { text, json, buffer } from 'node:stream/consumers';
-import { Readable } from 'node:stream';
+```javascript
+const { text, json, buffer } = require('node:stream/consumers');
+const { Readable } = require('node:stream');
 
-async function readStreamAsJson<T>(stream: Readable): Promise<T> {
-  return json(stream) as Promise<T>;
+async function readStreamAsJson(stream) {
+  return json(stream);
 }
 
-async function readStreamAsText(stream: Readable): Promise<string> {
+async function readStreamAsText(stream) {
   return text(stream);
 }
 ```

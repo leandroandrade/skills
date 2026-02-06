@@ -7,13 +7,15 @@ metadata:
 
 # Response Serialization
 
-## Use TypeBox for Type-Safe Response Schemas
+## Use TypeBox for Response Schemas
 
-Define response schemas with TypeBox for automatic TypeScript types and fast serialization:
+Define response schemas with TypeBox for fast serialization:
 
-```typescript
-import Fastify from 'fastify';
-import { Type, type Static } from '@sinclair/typebox';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
+const { Type } = require('@sinclair/typebox');
 
 const app = Fastify();
 
@@ -26,10 +28,8 @@ const UserResponse = Type.Object({
 
 const UsersResponse = Type.Array(UserResponse);
 
-type UserResponseType = Static<typeof UserResponse>;
-
-// With TypeBox schema - uses fast-json-stringify (faster) + TypeScript types
-app.get<{ Reply: Static<typeof UsersResponse> }>('/users', {
+// With TypeBox schema - uses fast-json-stringify (faster)
+app.get('/users', {
   schema: {
     response: {
       200: UsersResponse,
@@ -39,7 +39,7 @@ app.get<{ Reply: Static<typeof UsersResponse> }>('/users', {
   return db.users.findAll();
 });
 
-// Without schema - uses JSON.stringify (slower), no type safety
+// Without schema - uses JSON.stringify (slower)
 app.get('/users-slow', async () => {
   return db.users.findAll();
 });
@@ -52,7 +52,6 @@ Fastify uses `fast-json-stringify` when response schemas are defined. This provi
 1. **Performance**: 2-3x faster serialization than JSON.stringify
 2. **Security**: Only defined properties are serialized (strips sensitive data)
 3. **Type coercion**: Ensures output matches the schema
-4. **TypeScript**: Full type inference with TypeBox
 
 ## Response Schema Benefits
 
@@ -61,7 +60,9 @@ Fastify uses `fast-json-stringify` when response schemas are defined. This provi
 3. **Documentation**: OpenAPI/Swagger integration
 4. **Type coercion**: Ensures correct output types
 
-```typescript
+```javascript
+'use strict';
+
 app.get('/user/:id', {
   schema: {
     response: {
@@ -86,7 +87,9 @@ app.get('/user/:id', {
 
 Define schemas for different response codes:
 
-```typescript
+```javascript
+'use strict';
+
 app.get('/users/:id', {
   schema: {
     response: {
@@ -124,7 +127,9 @@ app.get('/users/:id', {
 
 Use 'default' for common error responses:
 
-```typescript
+```javascript
+'use strict';
+
 app.get('/resource', {
   schema: {
     response: {
@@ -153,7 +158,9 @@ app.get('/resource', {
 
 Create custom serialization functions:
 
-```typescript
+```javascript
+'use strict';
+
 // Per-route serializer
 app.get('/custom', {
   schema: {
@@ -184,8 +191,10 @@ app.get('/custom', {
 
 Use the global serializer compiler:
 
-```typescript
-import Fastify from 'fastify';
+```javascript
+'use strict';
+
+const Fastify = require('fastify');
 
 const app = Fastify({
   serializerCompiler: ({ schema, method, url, httpStatus }) => {
@@ -200,7 +209,9 @@ const app = Fastify({
 
 fast-json-stringify coerces types:
 
-```typescript
+```javascript
+'use strict';
+
 app.get('/data', {
   schema: {
     response: {
@@ -230,7 +241,9 @@ app.get('/data', {
 
 Handle nullable fields properly:
 
-```typescript
+```javascript
+'use strict';
+
 app.get('/profile', {
   schema: {
     response: {
@@ -262,7 +275,9 @@ app.get('/profile', {
 
 Control extra properties in response:
 
-```typescript
+```javascript
+'use strict';
+
 // Strip additional properties (default)
 app.get('/strict', {
   schema: {
@@ -305,7 +320,9 @@ app.get('/flexible', {
 
 Serialize nested structures:
 
-```typescript
+```javascript
+'use strict';
+
 app.addSchema({
   $id: 'address',
   type: 'object',
@@ -354,7 +371,9 @@ app.get('/user', {
 
 Handle dates consistently:
 
-```typescript
+```javascript
+'use strict';
+
 app.get('/events', {
   schema: {
     response: {
@@ -385,7 +404,9 @@ app.get('/events', {
 
 Handle BigInt values:
 
-```typescript
+```javascript
+'use strict';
+
 // BigInt is not JSON serializable by default
 app.get('/large-number', {
   schema: {
@@ -413,8 +434,10 @@ app.get('/large-number', {
 
 Stream responses bypass serialization:
 
-```typescript
-import { createReadStream } from 'node:fs';
+```javascript
+'use strict';
+
+const { createReadStream } = require('node:fs');
 
 app.get('/file', async (request, reply) => {
   const stream = createReadStream('./data.json');
@@ -446,7 +469,9 @@ app.get('/stream', async (request, reply) => {
 
 Modify data before serialization:
 
-```typescript
+```javascript
+'use strict';
+
 app.addHook('preSerialization', async (request, reply, payload) => {
   // Add metadata to responses
   if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
@@ -465,7 +490,9 @@ app.addHook('preSerialization', async (request, reply, payload) => {
 
 Skip serialization for specific routes:
 
-```typescript
+```javascript
+'use strict';
+
 app.get('/raw', async (request, reply) => {
   const data = JSON.stringify({ raw: true });
   reply.type('application/json');

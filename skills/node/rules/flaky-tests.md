@@ -34,14 +34,14 @@ node --test --test-timeout=5000
 
 # The error message will include the test name and file:
 # Error: test timed out after 5000ms
-#     at /path/to/test.ts:42:5
+#     at /path/to/test.js:42:5
 ```
 
 ### 3. Run Individual Test Files
 
 ```bash
 # Isolate by running files one at a time
-for f in src/**/*.test.ts; do
+for f in src/**/*.test.js; do
   echo "Running: $f"
   timeout 30s node --test "$f" || echo "TIMEOUT or FAIL: $f"
 done
@@ -49,8 +49,8 @@ done
 
 ### 4. Add Diagnostic Logging to Test Hooks
 
-```typescript
-import { describe, it, before, after, beforeEach, afterEach } from 'node:test';
+```javascript
+const { describe, it, before, after, beforeEach, afterEach } = require('node:test');
 
 describe('MyTests', () => {
   before(() => console.log('[BEFORE] MyTests starting'));
@@ -67,7 +67,7 @@ describe('MyTests', () => {
 
 ```bash
 # Use --inspect to debug hanging tests
-node --inspect --test src/hanging.test.ts
+node --inspect --test src/hanging.test.js
 
 # Then connect Chrome DevTools to chrome://inspect
 # Check the "Async" call stack to see what's pending
@@ -75,9 +75,9 @@ node --inspect --test src/hanging.test.ts
 
 ### 6. Use wtfnode to Find Open Handles
 
-```typescript
-import { describe, it, after } from 'node:test';
-import wtfnode from 'wtfnode';
+```javascript
+const { describe, it, after } = require('node:test');
+const wtfnode = require('wtfnode');
 
 describe('Debug hanging tests', () => {
   after(() => {
@@ -97,7 +97,7 @@ describe('Debug hanging tests', () => {
 
 **Symptom**: Test passes locally but fails in CI, or fails randomly.
 
-```typescript
+```javascript
 // BAD - Race condition with setTimeout
 it('should process after delay', async (t) => {
   let processed = false;
@@ -118,7 +118,7 @@ it('should process after delay', async (t) => {
 
 **Symptom**: Tests fail around midnight, month boundaries, or in different timezones.
 
-```typescript
+```javascript
 // BAD - Depends on current time
 it('should format today', (t) => {
   const result = formatDate(new Date());
@@ -146,7 +146,7 @@ it('should format today', (t) => {
 
 **Symptom**: "EADDRINUSE" errors, tests fail when run in parallel.
 
-```typescript
+```javascript
 // BAD - Hardcoded port
 it('should start server', async (t) => {
   const server = await startServer({ port: 3000 }); // Conflicts with other tests
@@ -166,7 +166,7 @@ it('should start server', async (t) => {
 
 **Symptom**: Tests pass individually but fail when run together.
 
-```typescript
+```javascript
 // BAD - Module-level state persists between tests
 let cache = new Map();
 
@@ -202,7 +202,7 @@ describe('cache tests', () => {
 
 **Symptom**: Tests pass with `--test` but fail with `--test --parallel`.
 
-```typescript
+```javascript
 // BAD - Test 2 depends on side effect from Test 1
 it('test 1: create user', async (t) => {
   await db.insert({ id: 1, name: 'John' });
@@ -226,7 +226,7 @@ it('test 2: find user', async (t) => {
 
 **Symptom**: Test appears to pass but process exits with error, or random failures.
 
-```typescript
+```javascript
 // BAD - Fire-and-forget async operation
 it('should send notification', async (t) => {
   sendNotification(user); // Not awaited - may reject after test ends
@@ -244,7 +244,7 @@ it('should send notification', async (t) => {
 
 **Symptom**: Tests fail with "too many open files" or connections exhausted.
 
-```typescript
+```javascript
 // BAD - Resources not cleaned up
 it('should read file', async (t) => {
   const handle = await fs.open('test.txt');
@@ -269,10 +269,10 @@ it('should read file', async (t) => {
 
 ```bash
 # Run single test file
-node --test src/user.test.ts
+node --test src/user.test.js
 
 # Run single test by name
-node --test --test-name-pattern="should create user" src/user.test.ts
+node --test --test-name-pattern="should create user" src/user.test.js
 ```
 
 ### 2. Increase Concurrency to Expose Race Conditions
@@ -282,12 +282,12 @@ node --test --test-name-pattern="should create user" src/user.test.ts
 node --test --test-concurrency=10
 
 # Or run the same test multiple times
-for i in {1..50}; do node --test src/flaky.test.ts || echo "Failed on run $i"; done
+for i in {1..50}; do node --test src/flaky.test.js || echo "Failed on run $i"; done
 ```
 
 ### 3. Use Test Retry to Identify Flaky Tests
 
-```typescript
+```javascript
 // Temporarily add retry to identify flaky test
 it('potentially flaky test', { retry: 3 }, async (t) => {
   // If this needs retries to pass, it's flaky
@@ -296,7 +296,7 @@ it('potentially flaky test', { retry: 3 }, async (t) => {
 
 ### 4. Add Diagnostic Logging
 
-```typescript
+```javascript
 it('flaky test', async (t) => {
   console.log('Test started at:', Date.now());
   console.log('Environment:', process.env.NODE_ENV);
@@ -310,8 +310,8 @@ it('flaky test', async (t) => {
 
 ### 5. Check for Async Leaks
 
-```typescript
-import { describe, it, after } from 'node:test';
+```javascript
+const { describe, it, after } = require('node:test');
 
 describe('async leak detection', () => {
   const activeHandles = new Set();
@@ -338,7 +338,7 @@ describe('async leak detection', () => {
 
 ### 1. Use Deterministic IDs
 
-```typescript
+```javascript
 // BAD - Random IDs make debugging hard
 const id = crypto.randomUUID();
 
@@ -348,7 +348,7 @@ const id = `test-user-${t.name}`;
 
 ### 2. Mock External Services
 
-```typescript
+```javascript
 it('should fetch user', async (t) => {
   // Mock fetch to avoid network flakiness
   t.mock.method(globalThis, 'fetch', async () => ({
@@ -363,7 +363,7 @@ it('should fetch user', async (t) => {
 
 ### 3. Use Explicit Waits Instead of Timeouts
 
-```typescript
+```javascript
 // BAD - Arbitrary timeout
 await new Promise(r => setTimeout(r, 1000));
 
@@ -383,7 +383,7 @@ async function waitFor(condition, timeout = 5000) {
 
 ### 4. Ensure Test Isolation with Transactions
 
-```typescript
+```javascript
 describe('database tests', () => {
   beforeEach(async () => {
     await db.query('BEGIN');
@@ -407,7 +407,7 @@ describe('database tests', () => {
 
 CI environments often have less CPU/memory. Add appropriate timeouts:
 
-```typescript
+```javascript
 it('heavy computation', { timeout: 30000 }, async (t) => {
   // Longer timeout for CI
   const result = await heavyOperation();
@@ -428,7 +428,7 @@ node --test --test-concurrency=2
 
 Mock external APIs in tests to avoid network-related flakiness:
 
-```typescript
+```javascript
 // Always mock external HTTP calls in unit tests
 t.mock.method(globalThis, 'fetch', async (url) => {
   if (url.includes('api.external.com')) {

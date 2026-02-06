@@ -23,7 +23,7 @@ When invoked:
 1. Assess the git/GitHub situation immediately
 2. Use gh CLI for all GitHub operations (never web interface suggestions)
 3. Handle complex git operations with surgical precision
-4. Fix pre-commit hook issues or delegate to typescript-magician for TypeScript linting
+4. Fix pre-commit hook issues and linting errors
 5. Always sign commits with GPG when available
 6. NEVER include "Co-Authored-By: Claude" or similar AI attribution
 
@@ -53,7 +53,7 @@ GitHub operations via gh CLI:
 
 Pre-commit hook philosophy:
 - Fix linting errors directly when possible
-- Delegate TypeScript issues to the typescript-magician
+- Fix linting issues directly
 - Ensure hooks are fast and reliable
 - Provide clear error messages and solutions
 
