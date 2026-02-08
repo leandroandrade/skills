@@ -11,7 +11,7 @@ metadata:
 
 Use [pino](https://github.com/pinojs/pino) for fast, structured JSON logging:
 
-```typescript
+```javascript
 import pino from 'pino';
 
 const logger = pino({
@@ -26,7 +26,7 @@ logger.error({ err, orderId: order.id }, 'Failed to process payment');
 
 Use appropriate log levels:
 
-```typescript
+```javascript
 // DEBUG - detailed information for debugging
 logger.debug({ itemId: item.id, step: 'validation' }, 'Processing item');
 
@@ -49,12 +49,12 @@ Pino uses transports to process logs outside the main thread. Transports handle 
 Use [pino-pretty](https://github.com/pinojs/pino-pretty) for human-readable output during development:
 
 ```bash
-node app.ts | pino-pretty
+node app.js | pino-pretty
 ```
 
 Or configure programmatically:
 
-```typescript
+```javascript
 import pino from 'pino';
 
 const logger = pino({
@@ -71,7 +71,7 @@ const logger = pino({
 
 Send logs to multiple destinations:
 
-```typescript
+```javascript
 import pino from 'pino';
 
 const logger = pino({
@@ -103,7 +103,7 @@ const logger = pino({
 
 Create child loggers with bound context:
 
-```typescript
+```javascript
 const requestLogger = logger.child({
   requestId: req.id,
   userId: req.user?.id,
@@ -117,7 +117,7 @@ requestLogger.info({ itemId }, 'Item processed');
 
 Fastify has built-in pino integration:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify({
@@ -139,7 +139,7 @@ app.get('/', async (request) => {
 
 Use pino's built-in redaction for sensitive fields:
 
-```typescript
+```javascript
 const logger = pino({
   redact: ['password', 'token', 'apiKey', 'req.headers.authorization'],
 });
@@ -153,7 +153,7 @@ logger.info({ password: 'secret123' }, 'User login');
 
 The [debug](https://github.com/debug-js/debug) module is useful for library and module authors to emit tracing information. It is not meant for application logging:
 
-```typescript
+```javascript
 import createDebug from 'debug';
 
 const debug = createDebug('mymodule:connection');
@@ -165,7 +165,7 @@ debug('Query executed in %dms', duration);
 Enable debug output with the `DEBUG` environment variable:
 
 ```bash
-DEBUG=mymodule:* node app.ts
+DEBUG=mymodule:* node app.js
 ```
 
 Use debug for internal module diagnostics; use pino for application logs.
@@ -174,7 +174,7 @@ Use debug for internal module diagnostics; use pino for application logs.
 
 Use `util.debuglog` for module tracing without external dependencies:
 
-```typescript
+```javascript
 import { debuglog } from 'node:util';
 
 const debug = debuglog('mymodule');
@@ -186,8 +186,8 @@ debug('Connection established to %s', host);
 Enable with the `NODE_DEBUG` environment variable:
 
 ```bash
-NODE_DEBUG=mymodule node app.ts
-NODE_DEBUG=mymodule,http,net node app.ts
+NODE_DEBUG=mymodule node app.js
+NODE_DEBUG=mymodule,http,net node app.js
 ```
 
 This also works with Node.js internals (`NODE_DEBUG=http,net,tls`) for debugging core module behavior.
@@ -196,7 +196,7 @@ This also works with Node.js internals (`NODE_DEBUG=http,net,tls`) for debugging
 
 Never log credentials, tokens, or personal data:
 
-```typescript
+```javascript
 // BAD - logging sensitive data
 logger.info({ email, password }, 'User login');
 

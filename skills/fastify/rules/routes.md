@@ -11,7 +11,7 @@ metadata:
 
 Define routes with the shorthand methods or the full route method:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify();
@@ -48,29 +48,29 @@ app.route({
 
 Access URL parameters through `request.params`:
 
-```typescript
+```javascript
 // Single parameter
 app.get('/users/:id', async (request) => {
-  const { id } = request.params as { id: string };
+  const { id } = request.params;
   return { userId: id };
 });
 
 // Multiple parameters
 app.get('/users/:userId/posts/:postId', async (request) => {
-  const { userId, postId } = request.params as { userId: string; postId: string };
+  const { userId, postId } = request.params;
   return { userId, postId };
 });
 
 // Wildcard parameter (captures everything after)
 app.get('/files/*', async (request) => {
-  const path = (request.params as { '*': string })['*'];
+  const path = request.params['*'];
   return { filePath: path };
 });
 
 // Regex parameters (Fastify uses find-my-way)
 app.get('/orders/:id(\\d+)', async (request) => {
   // Only matches numeric IDs
-  const { id } = request.params as { id: string };
+  const { id } = request.params;
   return { orderId: parseInt(id, 10) };
 });
 ```
@@ -79,7 +79,7 @@ app.get('/orders/:id(\\d+)', async (request) => {
 
 Access query parameters through `request.query`:
 
-```typescript
+```javascript
 app.get('/search', {
   schema: {
     querystring: {
@@ -93,11 +93,7 @@ app.get('/search', {
     },
   },
   handler: async (request) => {
-    const { q, page, limit } = request.query as {
-      q: string;
-      page: number;
-      limit: number;
-    };
+    const { q, page, limit } = request.query;
     return { query: q, page, limit };
   },
 });
@@ -107,7 +103,7 @@ app.get('/search', {
 
 Access the request body through `request.body`:
 
-```typescript
+```javascript
 app.post('/users', {
   schema: {
     body: {
@@ -121,7 +117,7 @@ app.post('/users', {
     },
   },
   handler: async (request, reply) => {
-    const user = request.body as { name: string; email: string; age?: number };
+    const user = request.body;
     // Create user...
     reply.code(201);
     return { user };
@@ -133,7 +129,7 @@ app.post('/users', {
 
 Access request headers through `request.headers`:
 
-```typescript
+```javascript
 app.get('/protected', {
   schema: {
     headers: {
@@ -155,7 +151,7 @@ app.get('/protected', {
 
 Use reply methods to control the response:
 
-```typescript
+```javascript
 app.get('/examples', async (request, reply) => {
   // Set status code
   reply.code(201);
@@ -196,17 +192,17 @@ Organize routes by feature/domain in separate files:
 src/
   routes/
     users/
-      index.ts       # Route definitions
-      handlers.ts    # Handler functions
-      schemas.ts     # JSON schemas
+      index.js       # Route definitions
+      handlers.js    # Handler functions
+      schemas.js     # JSON schemas
     posts/
-      index.ts
-      handlers.ts
-      schemas.ts
+      index.js
+      handlers.js
+      schemas.js
 ```
 
-```typescript
-// routes/users/schemas.ts
+```javascript
+// routes/users/schemas.js
 export const userSchema = {
   type: 'object',
   properties: {
@@ -230,29 +226,23 @@ export const createUserSchema = {
   },
 };
 
-// routes/users/handlers.ts
-import type { FastifyRequest, FastifyReply } from 'fastify';
-
-export async function createUser(
-  request: FastifyRequest<{ Body: { name: string; email: string } }>,
-  reply: FastifyReply,
-) {
+// routes/users/handlers.js
+export async function createUser(request, reply) {
   const { name, email } = request.body;
   const user = await request.server.db.users.create({ name, email });
   reply.code(201);
   return user;
 }
 
-export async function getUsers(request: FastifyRequest) {
+export async function getUsers(request) {
   return request.server.db.users.findAll();
 }
 
-// routes/users/index.ts
-import type { FastifyInstance } from 'fastify';
+// routes/users/index.js
 import { createUser, getUsers } from './handlers.js';
 import { createUserSchema } from './schemas.js';
 
-export default async function userRoutes(fastify: FastifyInstance) {
+export default async function userRoutes(fastify) {
   fastify.get('/', getUsers);
   fastify.post('/', { schema: createUserSchema }, createUser);
 }
@@ -262,7 +252,7 @@ export default async function userRoutes(fastify: FastifyInstance) {
 
 Add constraints to routes for versioning or host-based routing:
 
-```typescript
+```javascript
 // Version constraint
 app.get('/users', {
   constraints: { version: '1.0.0' },
@@ -292,7 +282,7 @@ app.get('/', {
 
 Use prefixes to namespace routes:
 
-```typescript
+```javascript
 // Using register
 app.register(async function (fastify) {
   fastify.get('/list', async () => ({ users: [] }));
@@ -308,7 +298,7 @@ app.register(async function (fastify) {
 
 Handle multiple HTTP methods with one handler:
 
-```typescript
+```javascript
 app.route({
   method: ['GET', 'HEAD'],
   url: '/resource',
@@ -322,7 +312,7 @@ app.route({
 
 Customize the not found handler:
 
-```typescript
+```javascript
 app.setNotFoundHandler({
   preValidation: async (request, reply) => {
     // Optional pre-validation hook
@@ -344,7 +334,7 @@ app.setNotFoundHandler({
 
 Handle method not allowed responses:
 
-```typescript
+```javascript
 // Fastify doesn't have built-in 405 handling
 // Implement with a custom not found handler that checks allowed methods
 app.setNotFoundHandler(async (request, reply) => {
@@ -368,7 +358,7 @@ app.setNotFoundHandler(async (request, reply) => {
 
 Apply configuration to specific routes:
 
-```typescript
+```javascript
 app.get('/slow-operation', {
   config: {
     rateLimit: { max: 10, timeWindow: '1 minute' },
@@ -391,7 +381,7 @@ app.addHook('onRequest', async (request, reply) => {
 
 Register routes from async sources:
 
-```typescript
+```javascript
 app.register(async function (fastify) {
   const routeConfigs = await loadRoutesFromDatabase();
 
@@ -409,7 +399,7 @@ app.register(async function (fastify) {
 
 Use `@fastify/autoload` to automatically load routes from a directory structure:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import autoload from '@fastify/autoload';
 import { join } from 'node:path';
@@ -436,24 +426,22 @@ Directory structure:
 ```
 src/
   plugins/
-    database.ts     # Loaded automatically
-    auth.ts         # Loaded automatically
+    database.js     # Loaded automatically
+    auth.js         # Loaded automatically
   routes/
     users/
-      index.ts      # GET/POST /api/users
+      index.js      # GET/POST /api/users
       _id/
-        index.ts    # GET/PUT/DELETE /api/users/:id
+        index.js    # GET/PUT/DELETE /api/users/:id
     posts/
-      index.ts      # GET/POST /api/posts
+      index.js      # GET/POST /api/posts
 ```
 
 Route file example:
 
-```typescript
-// routes/users/index.ts
-import type { FastifyPluginAsync } from 'fastify';
-
-const users: FastifyPluginAsync = async (fastify) => {
+```javascript
+// routes/users/index.js
+const users = async (fastify) => {
   fastify.get('/', async () => {
     return fastify.repositories.users.findAll();
   });

@@ -11,7 +11,7 @@ metadata:
 
 Use `close-with-grace` for proper shutdown handling:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import closeWithGrace from 'close-with-grace';
 
@@ -45,7 +45,7 @@ app.log.info(`Server listening on ${app.server.address()}`);
 
 Implement comprehensive health checks:
 
-```typescript
+```javascript
 app.get('/health', async () => {
   return { status: 'ok', timestamp: new Date().toISOString() };
 });
@@ -147,7 +147,7 @@ ENV PORT=3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
   CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
 
-CMD ["node", "src/app.ts"]
+CMD ["node", "src/app.js"]
 ```
 
 ```yaml
@@ -258,7 +258,7 @@ spec:
 
 Configure logging for production:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify({
@@ -294,7 +294,7 @@ const app = Fastify({
 
 Configure appropriate timeouts:
 
-```typescript
+```javascript
 const app = Fastify({
   connectionTimeout: 30000,     // 30s connection timeout
   keepAliveTimeout: 72000,      // 72s keep-alive (longer than ALB 60s)
@@ -314,7 +314,7 @@ app.get('/long-operation', {
 
 Configure for load balancers:
 
-```typescript
+```javascript
 const app = Fastify({
   // Trust first proxy (load balancer)
   trustProxy: true,
@@ -333,7 +333,7 @@ const app = Fastify({
 
 Serve static files efficiently. **Always use `import.meta.dirname` as the base path**, never `process.cwd()`:
 
-```typescript
+```javascript
 import fastifyStatic from '@fastify/static';
 import { join } from 'node:path';
 
@@ -351,7 +351,7 @@ app.register(fastifyStatic, {
 
 Enable response compression:
 
-```typescript
+```javascript
 import fastifyCompress from '@fastify/compress';
 
 app.register(fastifyCompress, {
@@ -365,7 +365,7 @@ app.register(fastifyCompress, {
 
 Expose Prometheus metrics:
 
-```typescript
+```javascript
 import { register, collectDefaultMetrics, Counter, Histogram } from 'prom-client';
 
 collectDefaultMetrics();
@@ -406,7 +406,7 @@ app.get('/metrics', async (request, reply) => {
 
 Support rolling updates:
 
-```typescript
+```javascript
 import closeWithGrace from 'close-with-grace';
 
 // Stop accepting new connections gracefully
@@ -422,4 +422,3 @@ closeWithGrace({ delay: 30000 }, async ({ signal }) => {
   app.log.info('Server closed');
 });
 ```
-

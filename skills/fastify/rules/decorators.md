@@ -11,14 +11,14 @@ metadata:
 
 Decorators add custom properties and methods to Fastify instances, requests, and replies:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify();
 
 // Decorate the Fastify instance
 app.decorate('utility', {
-  formatDate: (date: Date) => date.toISOString(),
+  formatDate: (date) => date.toISOString(),
   generateId: () => crypto.randomUUID(),
 });
 
@@ -33,7 +33,7 @@ app.get('/example', async function (request, reply) {
 
 Three types of decorators for different contexts:
 
-```typescript
+```javascript
 // Instance decorator - available on fastify instance
 app.decorate('config', { apiVersion: '1.0.0' });
 app.decorate('db', databaseConnection);
@@ -47,46 +47,19 @@ app.decorateRequest('getData', function() {  // Method
 });
 
 // Reply decorator - available on each reply
-app.decorateReply('sendError', function(code: number, message: string) {
+app.decorateReply('sendError', function(code, message) {
   return this.code(code).send({ error: message });
 });
-app.decorateReply('success', function(data: unknown) {
+app.decorateReply('success', function(data) {
   return this.send({ success: true, data });
 });
 ```
 
-## TypeScript Declaration Merging
+## Extending Fastify
 
-Extend Fastify types for type safety:
+Add custom properties to Fastify instances, requests, and replies:
 
-```typescript
-// Declare custom properties
-declare module 'fastify' {
-  interface FastifyInstance {
-    config: {
-      apiVersion: string;
-      environment: string;
-    };
-    db: DatabaseClient;
-    cache: CacheClient;
-  }
-
-  interface FastifyRequest {
-    user: {
-      id: string;
-      email: string;
-      roles: string[];
-    } | null;
-    startTime: number;
-    requestId: string;
-  }
-
-  interface FastifyReply {
-    sendError: (code: number, message: string) => void;
-    success: (data: unknown) => void;
-  }
-}
-
+```javascript
 // Register decorators
 app.decorate('config', {
   apiVersion: '1.0.0',
@@ -96,7 +69,7 @@ app.decorate('config', {
 app.decorateRequest('user', null);
 app.decorateRequest('startTime', 0);
 
-app.decorateReply('sendError', function (code: number, message: string) {
+app.decorateReply('sendError', function (code, message) {
   this.code(code).send({ error: message });
 });
 ```
@@ -105,7 +78,7 @@ app.decorateReply('sendError', function (code: number, message: string) {
 
 Initialize request/reply decorators in hooks:
 
-```typescript
+```javascript
 // Decorators with primitive defaults are copied
 app.decorateRequest('startTime', 0);
 
@@ -130,7 +103,7 @@ app.addHook('onRequest', async (request) => {
 
 Use decorators for dependency injection:
 
-```typescript
+```javascript
 import fp from 'fastify-plugin';
 
 // Database plugin
@@ -152,8 +125,8 @@ export default fp(async function userServicePlugin(fastify) {
   }
 
   const userService = {
-    findById: (id: string) => fastify.db.query('SELECT * FROM users WHERE id = $1', [id]),
-    create: (data: CreateUserInput) => fastify.db.query(
+    findById: (id) => fastify.db.query('SELECT * FROM users WHERE id = $1', [id]),
+    create: (data) => fastify.db.query(
       'INSERT INTO users (name, email) VALUES ($1, $2) RETURNING *',
       [data.name, data.email]
     ),
@@ -175,21 +148,7 @@ app.get('/users/:id', async function (request) {
 
 Build rich request context:
 
-```typescript
-interface RequestContext {
-  traceId: string;
-  user: User | null;
-  permissions: Set<string>;
-  startTime: number;
-  metadata: Map<string, unknown>;
-}
-
-declare module 'fastify' {
-  interface FastifyRequest {
-    ctx: RequestContext;
-  }
-}
-
+```javascript
 app.decorateRequest('ctx', null);
 
 app.addHook('onRequest', async (request) => {
@@ -230,26 +189,12 @@ app.get('/profile', async (request, reply) => {
 
 Create consistent response methods:
 
-```typescript
-declare module 'fastify' {
-  interface FastifyReply {
-    ok: (data?: unknown) => void;
-    created: (data: unknown) => void;
-    noContent: () => void;
-    badRequest: (message: string, details?: unknown) => void;
-    unauthorized: (message?: string) => void;
-    forbidden: (message?: string) => void;
-    notFound: (resource?: string) => void;
-    conflict: (message: string) => void;
-    serverError: (message?: string) => void;
-  }
-}
-
-app.decorateReply('ok', function (data?: unknown) {
+```javascript
+app.decorateReply('ok', function (data) {
   this.code(200).send(data ?? { success: true });
 });
 
-app.decorateReply('created', function (data: unknown) {
+app.decorateReply('created', function (data) {
   this.code(201).send(data);
 });
 
@@ -257,7 +202,7 @@ app.decorateReply('noContent', function () {
   this.code(204).send();
 });
 
-app.decorateReply('badRequest', function (message: string, details?: unknown) {
+app.decorateReply('badRequest', function (message, details) {
   this.code(400).send({
     statusCode: 400,
     error: 'Bad Request',
@@ -301,7 +246,7 @@ app.post('/users', async (request, reply) => {
 
 Check if decorators exist before using:
 
-```typescript
+```javascript
 // Check at registration time
 app.register(async function (fastify) {
   if (!fastify.hasDecorator('db')) {
@@ -324,7 +269,7 @@ app.register(async function (fastify) {
 
 Decorators respect encapsulation by default:
 
-```typescript
+```javascript
 app.register(async function pluginA(fastify) {
   fastify.decorate('pluginAUtil', () => 'A');
 
@@ -344,7 +289,7 @@ app.register(async function pluginB(fastify) {
 
 Use `fastify-plugin` to share decorators:
 
-```typescript
+```javascript
 import fp from 'fastify-plugin';
 
 export default fp(async function sharedDecorator(fastify) {
@@ -358,26 +303,19 @@ export default fp(async function sharedDecorator(fastify) {
 
 Create decorators that return functions:
 
-```typescript
-declare module 'fastify' {
-  interface FastifyInstance {
-    createValidator: <T>(schema: object) => (data: unknown) => T;
-    createRateLimiter: (options: RateLimitOptions) => RateLimiter;
-  }
-}
-
-app.decorate('createValidator', function <T>(schema: object) {
+```javascript
+app.decorate('createValidator', function (schema) {
   const validate = ajv.compile(schema);
-  return (data: unknown): T => {
+  return (data) => {
     if (!validate(data)) {
       throw new ValidationError(validate.errors);
     }
-    return data as T;
+    return data;
   };
 });
 
 // Usage
-const validateUser = app.createValidator<User>(userSchema);
+const validateUser = app.createValidator(userSchema);
 
 app.post('/users', async (request) => {
   const user = validateUser(request.body);
@@ -389,7 +327,7 @@ app.post('/users', async (request) => {
 
 Handle async initialization properly:
 
-```typescript
+```javascript
 import fp from 'fastify-plugin';
 
 export default fp(async function asyncPlugin(fastify) {
@@ -400,7 +338,7 @@ export default fp(async function asyncPlugin(fastify) {
   fastify.decorate('asyncService', {
     connection,
     cache,
-    query: async (sql: string) => connection.query(sql),
+    query: async (sql) => connection.query(sql),
   });
 
   fastify.addHook('onClose', async () => {

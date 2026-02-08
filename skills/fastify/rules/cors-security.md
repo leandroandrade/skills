@@ -11,7 +11,7 @@ metadata:
 
 Enable Cross-Origin Resource Sharing:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 
@@ -35,7 +35,7 @@ app.register(cors, {
 
 Validate origins dynamically:
 
-```typescript
+```javascript
 app.register(cors, {
   origin: (origin, callback) => {
     // Allow requests with no origin (mobile apps, curl, etc.)
@@ -71,7 +71,7 @@ app.register(cors, {
 
 Configure CORS for specific routes:
 
-```typescript
+```javascript
 app.register(cors, {
   origin: true, // Reflect request origin
   credentials: true,
@@ -94,7 +94,7 @@ app.route({
 
 Add security headers:
 
-```typescript
+```javascript
 import helmet from '@fastify/helmet';
 
 app.register(helmet, {
@@ -115,7 +115,7 @@ app.register(helmet, {
 
 Fine-tune security headers:
 
-```typescript
+```javascript
 app.register(helmet, {
   // Strict Transport Security
   hsts: {
@@ -162,7 +162,7 @@ app.register(helmet, {
 
 Protect against abuse:
 
-```typescript
+```javascript
 import rateLimit from '@fastify/rate-limit';
 
 app.register(rateLimit, {
@@ -198,7 +198,7 @@ app.get('/health', {
 
 Use Redis for distributed rate limiting:
 
-```typescript
+```javascript
 import rateLimit from '@fastify/rate-limit';
 import Redis from 'ioredis';
 
@@ -220,7 +220,7 @@ app.register(rateLimit, {
 
 Protect against Cross-Site Request Forgery:
 
-```typescript
+```javascript
 import fastifyCsrf from '@fastify/csrf-protection';
 import fastifyCookie from '@fastify/cookie';
 
@@ -252,7 +252,7 @@ app.post('/transfer', {
 
 Add custom headers:
 
-```typescript
+```javascript
 app.addHook('onSend', async (request, reply) => {
   // Custom security headers
   reply.header('X-Request-ID', request.id);
@@ -273,7 +273,7 @@ app.get('/download', async (request, reply) => {
 
 Configure secure cookies:
 
-```typescript
+```javascript
 import cookie from '@fastify/cookie';
 
 app.register(cookie, {
@@ -320,7 +320,7 @@ app.get('/profile', async (request) => {
 
 Validate and sanitize input:
 
-```typescript
+```javascript
 // Schema-based validation protects against injection
 app.post('/users', {
   schema: {
@@ -350,7 +350,7 @@ app.post('/users', {
 
 Restrict access by IP:
 
-```typescript
+```javascript
 const allowedIps = new Set([
   '192.168.1.0/24',
   '10.0.0.0/8',
@@ -366,7 +366,7 @@ app.addHook('onRequest', async (request, reply) => {
   }
 });
 
-function isIpAllowed(ip: string, allowed: Set<string>): boolean {
+function isIpAllowed(ip, allowed) {
   // Implement IP/CIDR matching
   for (const range of allowed) {
     if (ipInRange(ip, range)) return true;
@@ -379,7 +379,7 @@ function isIpAllowed(ip: string, allowed: Set<string>): boolean {
 
 Configure for reverse proxy environments:
 
-```typescript
+```javascript
 const app = Fastify({
   trustProxy: true, // Trust X-Forwarded-* headers
 });
@@ -402,7 +402,7 @@ app.get('/ip', async (request) => {
 
 Force HTTPS in production:
 
-```typescript
+```javascript
 app.addHook('onRequest', async (request, reply) => {
   if (
     process.env.NODE_ENV === 'production' &&
@@ -416,7 +416,7 @@ app.addHook('onRequest', async (request, reply) => {
 
 ## Security Best Practices Summary
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';

@@ -37,10 +37,6 @@ npm ls fastify
 # List package contents
 ls node_modules/fastify/
 
-# Find TypeScript definitions
-ls node_modules/fastify/*.d.ts
-ls node_modules/@types/node/
-
 # Check main entry point
 cat node_modules/fastify/package.json | grep '"main"\|"exports"'
 ```
@@ -140,17 +136,6 @@ node -e "console.log(JSON.stringify(require('./node_modules/fastify/package.json
 
 # Check main field (legacy)
 cat node_modules/fastify/package.json | grep '"main"'
-```
-
-### TypeScript Definitions
-
-```bash
-# Find type definitions
-ls node_modules/fastify/*.d.ts
-cat node_modules/fastify/package.json | grep '"types"\|"typings"'
-
-# For DefinitelyTyped packages
-ls node_modules/@types/
 ```
 
 ### Source Files

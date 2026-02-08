@@ -11,7 +11,7 @@ metadata:
 
 Use [@fastify/create-error](https://github.com/fastify/fastify-error) for creating custom errors with codes:
 
-```typescript
+```javascript
 import createError from '@fastify/create-error';
 
 const NotFoundError = createError('NOT_FOUND', '%s not found', 404);
@@ -27,31 +27,25 @@ throw new ValidationError('Email is required');
 
 If you prefer no dependencies, use this minimal pattern:
 
-```typescript
-interface AppErrorOptions {
-  code: string;
-  statusCode?: number;
-  cause?: Error;
-}
-
-function createAppError(message: string, options: AppErrorOptions): Error {
+```javascript
+function createAppError(message, options) {
   const error = new Error(message, { cause: options.cause });
-  (error as any).code = options.code;
-  (error as any).statusCode = options.statusCode ?? 500;
+  error.code = options.code;
+  error.statusCode = options.statusCode ?? 500;
   Error.captureStackTrace(error, createAppError);
   return error;
 }
 
 // Factory functions for common errors
-function notFound(resource: string): Error {
+function notFound(resource) {
   return createAppError(`${resource} not found`, { code: 'NOT_FOUND', statusCode: 404 });
 }
 
-function validationError(message: string): Error {
+function validationError(message) {
   return createAppError(message, { code: 'VALIDATION_ERROR', statusCode: 400 });
 }
 
-function databaseError(message: string, cause?: Error): Error {
+function databaseError(message, cause) {
   return createAppError(message, { code: 'DATABASE_ERROR', statusCode: 500, cause });
 }
 
@@ -64,8 +58,8 @@ throw validationError('Email is required');
 
 Check errors by code, not by class:
 
-```typescript
-function isAppError(error: unknown): error is Error & { code: string; statusCode: number } {
+```javascript
+function isAppError(error) {
   return error instanceof Error && 'code' in error && 'statusCode' in error;
 }
 
@@ -83,8 +77,8 @@ try {
 
 Always use try-catch with async/await and propagate errors properly:
 
-```typescript
-async function fetchUser(id: string): Promise<User> {
+```javascript
+async function fetchUser(id) {
   try {
     const user = await db.users.findById(id);
     if (!user) {
@@ -95,7 +89,7 @@ async function fetchUser(id: string): Promise<User> {
     if (isAppError(error)) {
       throw error;
     }
-    throw databaseError('Failed to fetch user', error as Error);
+    throw databaseError('Failed to fetch user', error);
   }
 }
 ```
@@ -110,14 +104,14 @@ See [graceful-shutdown.md](./graceful-shutdown.md) for proper shutdown handling.
 
 Fastify has built-in error handling:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify({ logger: true });
 
 app.setErrorHandler((error, request, reply) => {
-  const statusCode = (error as any).statusCode ?? 500;
-  const code = (error as any).code ?? 'INTERNAL_ERROR';
+  const statusCode = error.statusCode ?? 500;
+  const code = error.code ?? 'INTERNAL_ERROR';
 
   request.log.error(error);
 
@@ -134,7 +128,7 @@ app.setErrorHandler((error, request, reply) => {
 
 Never use empty catch blocks that hide errors:
 
-```typescript
+```javascript
 // BAD - error is swallowed
 try {
   await riskyOperation();
@@ -155,7 +149,7 @@ try {
 
 Use the `cause` option to preserve error chains:
 
-```typescript
+```javascript
 try {
   await externalService.call();
 } catch (error) {

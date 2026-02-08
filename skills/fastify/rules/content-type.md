@@ -11,7 +11,7 @@ metadata:
 
 Fastify includes parsers for common content types:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify();
@@ -35,7 +35,7 @@ app.post('/text', async (request) => {
 
 Add parsers for additional content types:
 
-```typescript
+```javascript
 // Parse application/x-www-form-urlencoded
 app.addContentTypeParser(
   'application/x-www-form-urlencoded',
@@ -61,7 +61,7 @@ app.addContentTypeParser(
 
 Parse XML content:
 
-```typescript
+```javascript
 import { XMLParser } from 'fast-xml-parser';
 
 const xmlParser = new XMLParser({
@@ -95,7 +95,7 @@ app.post('/xml', async (request) => {
 
 Use @fastify/multipart for file uploads. **Configure these critical options:**
 
-```typescript
+```javascript
 import fastifyMultipart from '@fastify/multipart';
 
 app.register(fastifyMultipart, {
@@ -158,15 +158,15 @@ app.post('/upload-multiple', async (request) => {
 // Handle mixed form data
 app.post('/form', async (request) => {
   const parts = request.parts();
-  const fields: Record<string, string> = {};
-  const files: Array<{ name: string; size: number }> = [];
+  const fields = {};
+  const files = [];
 
   for await (const part of parts) {
     if (part.type === 'file') {
       const buffer = await part.toBuffer();
       files.push({ name: part.filename, size: buffer.length });
     } else {
-      fields[part.fieldname] = part.value as string;
+      fields[part.fieldname] = part.value;
     }
   }
 
@@ -178,7 +178,7 @@ app.post('/form', async (request) => {
 
 Process body as stream for large payloads:
 
-```typescript
+```javascript
 import { pipeline } from 'node:stream/promises';
 import { createWriteStream } from 'node:fs';
 
@@ -203,7 +203,7 @@ app.post('/upload-stream', async (request, reply) => {
 
 Replace the default JSON parser:
 
-```typescript
+```javascript
 // Remove default parser
 app.removeContentTypeParser('application/json');
 
@@ -229,7 +229,7 @@ app.addContentTypeParser(
 
 Handle content types with parameters:
 
-```typescript
+```javascript
 // Match content type with any charset
 app.addContentTypeParser(
   'application/json; charset=utf-8',
@@ -253,9 +253,9 @@ app.addContentTypeParser(
 
 Handle unknown content types:
 
-```typescript
+```javascript
 app.addContentTypeParser('*', async (request, payload) => {
-  const chunks: Buffer[] = [];
+  const chunks = [];
 
   for await (const chunk of payload) {
     chunks.push(chunk);
@@ -282,7 +282,7 @@ app.addContentTypeParser('*', async (request, payload) => {
 
 Configure body size limits:
 
-```typescript
+```javascript
 // Global limit
 const app = Fastify({
   bodyLimit: 1048576, // 1MB
@@ -308,7 +308,7 @@ app.addContentTypeParser('application/json', {
 
 Parse protobuf content:
 
-```typescript
+```javascript
 import protobuf from 'protobufjs';
 
 const root = await protobuf.load('./schema.proto');
@@ -328,14 +328,14 @@ app.addContentTypeParser(
 
 Simple form parsing:
 
-```typescript
+```javascript
 import formbody from '@fastify/formbody';
 
 app.register(formbody);
 
 app.post('/form', async (request) => {
   // request.body is parsed form data
-  const { name, email } = request.body as { name: string; email: string };
+  const { name, email } = request.body;
   return { name, email };
 });
 ```
@@ -344,7 +344,7 @@ app.post('/form', async (request) => {
 
 Handle different request formats:
 
-```typescript
+```javascript
 app.post('/data', async (request, reply) => {
   const contentType = request.headers['content-type'];
 
@@ -368,7 +368,7 @@ app.post('/data', async (request, reply) => {
 
 Validate parsed content:
 
-```typescript
+```javascript
 app.post('/users', {
   schema: {
     body: {

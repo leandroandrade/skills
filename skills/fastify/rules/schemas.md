@@ -7,17 +7,17 @@ metadata:
 
 # JSON Schema Validation
 
-## Use TypeBox for Type-Safe Schemas
+## Use TypeBox for Schemas
 
-**Prefer TypeBox for defining schemas.** It provides TypeScript types automatically and compiles to JSON Schema:
+**Prefer TypeBox for defining schemas.** It provides compile-time validation and compiles to JSON Schema:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
-import { Type, type Static } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 
 const app = Fastify();
 
-// Define schema with TypeBox - get TypeScript types for free
+// Define schema with TypeBox
 const CreateUserBody = Type.Object({
   name: Type.String({ minLength: 1, maxLength: 100 }),
   email: Type.String({ format: 'email' }),
@@ -31,14 +31,7 @@ const UserResponse = Type.Object({
   createdAt: Type.String({ format: 'date-time' }),
 });
 
-// TypeScript types are derived automatically
-type CreateUserBodyType = Static<typeof CreateUserBody>;
-type UserResponseType = Static<typeof UserResponse>;
-
-app.post<{
-  Body: CreateUserBodyType;
-  Reply: UserResponseType;
-}>('/users', {
+app.post('/users', {
   schema: {
     body: CreateUserBody,
     response: {
@@ -46,7 +39,6 @@ app.post<{
     },
   },
 }, async (request, reply) => {
-  // request.body is fully typed as CreateUserBodyType
   const user = await createUser(request.body);
   reply.code(201);
   return user;
@@ -55,8 +47,8 @@ app.post<{
 
 ## TypeBox Common Patterns
 
-```typescript
-import { Type, type Static } from '@sinclair/typebox';
+```javascript
+import { Type } from '@sinclair/typebox';
 
 // Enums
 const Status = Type.Union([
@@ -94,8 +86,8 @@ const Metadata = Type.Record(Type.String(), Type.Unknown());
 
 ## Register TypeBox Schemas Globally
 
-```typescript
-import { Type, type Static } from '@sinclair/typebox';
+```javascript
+import { Type } from '@sinclair/typebox';
 
 // Define shared schemas
 const ErrorResponse = Type.Object({
@@ -128,7 +120,7 @@ app.get('/items', {
 
 You can also use plain JSON Schema directly:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify();
@@ -168,7 +160,7 @@ app.post('/users', { schema: createUserSchema }, async (request, reply) => {
 
 Validate different parts of the request:
 
-```typescript
+```javascript
 const fullRequestSchema = {
   // URL parameters
   params: {
@@ -214,7 +206,7 @@ app.put('/resources/:id', { schema: fullRequestSchema }, handler);
 
 Define reusable schemas with `$id` and reference them with `$ref`:
 
-```typescript
+```javascript
 // Add shared schemas to Fastify
 app.addSchema({
   $id: 'user',
@@ -279,7 +271,7 @@ app.get('/users/:id', {
 
 Define schemas for array responses:
 
-```typescript
+```javascript
 app.addSchema({
   $id: 'userList',
   type: 'object',
@@ -314,7 +306,7 @@ app.get('/users', {
 
 Add custom validation formats:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify({
@@ -344,9 +336,8 @@ app.addSchema({
 
 Add custom validation keywords:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
-import Ajv from 'ajv';
 
 const app = Fastify({
   ajv: {
@@ -355,7 +346,7 @@ const app = Fastify({
         {
           keyword: 'isEven',
           type: 'number',
-          validate: (schema: boolean, data: number) => {
+          validate: (schema, data) => {
             if (schema) {
               return data % 2 === 0;
             }
@@ -385,7 +376,7 @@ app.post('/numbers', {
 
 Fastify coerces types by default for query strings and params:
 
-```typescript
+```javascript
 // Query string "?page=5&active=true" becomes:
 // { page: 5, active: true } (number and boolean, not strings)
 
@@ -410,7 +401,7 @@ app.get('/items', {
 
 Customize validation error responses:
 
-```typescript
+```javascript
 app.setErrorHandler((error, request, reply) => {
   if (error.validation) {
     reply.code(400).send({
@@ -437,7 +428,7 @@ app.setErrorHandler((error, request, reply) => {
 
 Configure the Ajv schema compiler:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify({
@@ -459,7 +450,7 @@ const app = Fastify({
 
 Handle nullable fields properly:
 
-```typescript
+```javascript
 app.addSchema({
   $id: 'profile',
   type: 'object',
@@ -480,7 +471,7 @@ app.addSchema({
 
 Use if/then/else for conditional validation:
 
-```typescript
+```javascript
 app.addSchema({
   $id: 'payment',
   type: 'object',
@@ -506,8 +497,8 @@ app.addSchema({
 
 Organize schemas in a dedicated file:
 
-```typescript
-// schemas/index.ts
+```javascript
+// schemas/index.js
 export const schemas = [
   {
     $id: 'user',
@@ -529,7 +520,7 @@ export const schemas = [
   },
 ];
 
-// app.ts
+// app.js
 import { schemas } from './schemas/index.js';
 
 for (const schema of schemas) {
@@ -541,7 +532,7 @@ for (const schema of schemas) {
 
 Schemas work directly with @fastify/swagger:
 
-```typescript
+```javascript
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 
@@ -565,7 +556,7 @@ app.register(fastifySwaggerUi, {
 
 Response schemas enable fast-json-stringify for serialization:
 
-```typescript
+```javascript
 // With response schema - uses fast-json-stringify (faster)
 app.get('/users', {
   schema: {

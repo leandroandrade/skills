@@ -35,7 +35,7 @@ Incoming Request
 
 First hook to execute, before body parsing. Use for authentication, request ID setup:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify();
@@ -71,7 +71,7 @@ app.addHook('onRequest', async (request, reply) => {
 
 Execute before body parsing. Can modify the payload stream:
 
-```typescript
+```javascript
 app.addHook('preParsing', async (request, reply, payload) => {
   // Log raw payload size
   request.log.debug({ contentLength: request.headers['content-length'] }, 'Parsing body');
@@ -93,7 +93,7 @@ app.addHook('preParsing', async (request, reply, payload) => {
 
 Execute after parsing, before schema validation:
 
-```typescript
+```javascript
 app.addHook('preValidation', async (request, reply) => {
   // Modify body before validation
   if (request.body && typeof request.body === 'object') {
@@ -121,10 +121,10 @@ app.addHook('preValidation', async (request, reply) => {
 
 Most common hook, execute after validation, before handler:
 
-```typescript
+```javascript
 // Authorization check
 app.addHook('preHandler', async (request, reply) => {
-  const { userId } = request.params as { userId: string };
+  const { userId } = request.params;
 
   if (request.user.id !== userId && !request.user.isAdmin) {
     reply.code(403).send({ error: 'Forbidden' });
@@ -163,7 +163,7 @@ app.addHook('onError', async (request, reply, error) => {
 
 Modify payload before serialization:
 
-```typescript
+```javascript
 app.addHook('preSerialization', async (request, reply, payload) => {
   // Add metadata to all responses
   if (payload && typeof payload === 'object') {
@@ -192,7 +192,7 @@ app.addHook('preSerialization', async (request, reply, payload) => {
 
 Modify response after serialization:
 
-```typescript
+```javascript
 app.addHook('onSend', async (request, reply, payload) => {
   // Add response headers
   reply.header('X-Response-Time', Date.now() - request.startTime);
@@ -221,7 +221,7 @@ app.addHook('onSend', async (request, reply, payload) => {
 
 Execute after response is sent. Cannot modify response:
 
-```typescript
+```javascript
 app.addHook('onResponse', async (request, reply) => {
   // Log response time
   const responseTime = Date.now() - request.startTime;
@@ -245,7 +245,7 @@ app.addHook('onResponse', async (request, reply) => {
 
 Execute when an error is thrown:
 
-```typescript
+```javascript
 app.addHook('onError', async (request, reply, error) => {
   // Log error details
   request.log.error({
@@ -272,7 +272,7 @@ app.addHook('onError', async (request, reply, error) => {
 
 Execute when request times out:
 
-```typescript
+```javascript
 const app = Fastify({
   connectionTimeout: 30000, // 30 seconds
 });
@@ -294,7 +294,7 @@ app.addHook('onTimeout', async (request, reply) => {
 
 Execute when client closes connection:
 
-```typescript
+```javascript
 app.addHook('onRequestAbort', async (request) => {
   request.log.info('Client aborted request');
 
@@ -316,7 +316,7 @@ app.addHook('onRequestAbort', async (request) => {
 
 Hooks that run at application startup/shutdown:
 
-```typescript
+```javascript
 // After all plugins are loaded
 app.addHook('onReady', async function () {
   this.log.info('Server is ready');
@@ -360,7 +360,7 @@ app.addHook('onRegister', (instance, options) => {
 
 Hooks are scoped to their encapsulation context:
 
-```typescript
+```javascript
 app.addHook('onRequest', async (request) => {
   // Runs for ALL routes
   request.log.info('Global hook');
@@ -384,7 +384,7 @@ app.register(async function adminRoutes(fastify) {
 
 Multiple hooks of the same type execute in registration order:
 
-```typescript
+```javascript
 app.addHook('onRequest', async () => {
   console.log('First');
 });
@@ -404,7 +404,7 @@ app.addHook('onRequest', async () => {
 
 Return early from hooks to stop processing:
 
-```typescript
+```javascript
 app.addHook('preHandler', async (request, reply) => {
   if (!request.user) {
     // Send response and return to stop further processing
@@ -419,7 +419,7 @@ app.addHook('preHandler', async (request, reply) => {
 
 Add hooks to specific routes:
 
-```typescript
+```javascript
 const adminOnlyHook = async (request, reply) => {
   if (!request.user?.isAdmin) {
     reply.code(403).send({ error: 'Forbidden' });
@@ -445,7 +445,7 @@ app.post('/orders', {
 
 Always use async/await in hooks:
 
-```typescript
+```javascript
 // GOOD - async hook
 app.addHook('preHandler', async (request, reply) => {
   const user = await loadUser(request.headers.authorization);

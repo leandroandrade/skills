@@ -12,7 +12,7 @@ metadata:
 Use [@platformatic/flame](https://github.com/platformatic/flame) for CPU profiling with flame graph visualization:
 
 ```bash
-npx @platformatic/flame app.ts
+npx @platformatic/flame app.js
 ```
 
 This starts your application with profiling enabled and generates an interactive flame graph.
@@ -22,7 +22,7 @@ This starts your application with profiling enabled and generates an interactive
 flame can output markdown reports suitable for AI-assisted performance analysis:
 
 ```bash
-npx @platformatic/flame --output markdown app.ts
+npx @platformatic/flame --output markdown app.js
 ```
 
 This enables a fully agentic workflow where you can:
@@ -32,7 +32,7 @@ This enables a fully agentic workflow where you can:
 
 ### Programmatic Usage
 
-```typescript
+```javascript
 import { profile } from '@platformatic/flame';
 
 const stop = await profile({
@@ -71,7 +71,7 @@ Options:
 
 ### Programmatic autocannon
 
-```typescript
+```javascript
 import autocannon from 'autocannon';
 
 const result = await autocannon({

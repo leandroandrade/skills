@@ -11,7 +11,7 @@ metadata:
 
 Use `@fastify/http-proxy` for simple reverse proxy scenarios:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import httpProxy from '@fastify/http-proxy';
 
@@ -44,7 +44,7 @@ await app.listen({ port: 3000 });
 
 For more control over proxying, use `@fastify/reply-from` with `reply.from()`:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import replyFrom from '@fastify/reply-from';
 
@@ -96,7 +96,7 @@ function selectUpstream(request) {
 
 Build an API gateway with multiple backends:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import replyFrom from '@fastify/reply-from';
 
@@ -143,7 +143,7 @@ app.register(async function (fastify) {
 
 Handle request bodies when proxying:
 
-```typescript
+```javascript
 app.post('/api/data', async (request, reply) => {
   return reply.from('/data', {
     body: request.body,
@@ -164,7 +164,7 @@ app.post('/upload', async (request, reply) => {
 
 Handle upstream errors gracefully:
 
-```typescript
+```javascript
 app.register(replyFrom, {
   base: 'http://backend:3001',
   // Called when upstream returns an error
@@ -195,7 +195,7 @@ app.get('/data', async (request, reply) => {
 
 Proxy WebSocket connections:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import httpProxy from '@fastify/http-proxy';
 
@@ -212,7 +212,7 @@ app.register(httpProxy, {
 
 Configure proxy timeouts:
 
-```typescript
+```javascript
 app.register(replyFrom, {
   base: 'http://backend:3001',
   http: {
@@ -227,7 +227,7 @@ app.register(replyFrom, {
 
 Add caching to proxied responses:
 
-```typescript
+```javascript
 import { createCache } from 'async-cache-dedupe';
 
 const cache = createCache({
@@ -235,7 +235,7 @@ const cache = createCache({
   storage: { type: 'memory' },
 });
 
-cache.define('proxyGet', async (url: string) => {
+cache.define('proxyGet', async (url) => {
   const response = await fetch(`http://backend:3001${url}`);
   return response.json();
 });

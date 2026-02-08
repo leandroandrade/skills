@@ -11,7 +11,7 @@ metadata:
 
 Use `@fastify/jwt` for JSON Web Token authentication:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import fastifyJwt from '@fastify/jwt';
 
@@ -74,7 +74,7 @@ app.get('/profile', {
 
 Implement refresh token rotation:
 
-```typescript
+```javascript
 import fastifyJwt from '@fastify/jwt';
 import { randomBytes } from 'node:crypto';
 
@@ -86,7 +86,7 @@ app.register(fastifyJwt, {
 });
 
 // Store refresh tokens (use Redis in production)
-const refreshTokens = new Map<string, { userId: string; expires: number }>();
+const refreshTokens = new Map();
 
 app.post('/auth/login', async (request, reply) => {
   const { email, password } = request.body;
@@ -142,15 +142,13 @@ app.post('/auth/logout', async (request, reply) => {
 
 Implement RBAC with decorators:
 
-```typescript
-type Role = 'admin' | 'user' | 'moderator';
-
+```javascript
 // Create authorization decorator
-app.decorate('authorize', function (...allowedRoles: Role[]) {
+app.decorate('authorize', function (...allowedRoles) {
   return async (request, reply) => {
     await request.jwtVerify();
 
-    const userRole = request.user.role as Role;
+    const userRole = request.user.role;
     if (!allowedRoles.includes(userRole)) {
       return reply.code(403).send({
         error: 'Forbidden',
@@ -180,13 +178,8 @@ app.delete('/posts/:id', {
 
 Fine-grained permission checks:
 
-```typescript
-interface Permission {
-  resource: string;
-  action: 'create' | 'read' | 'update' | 'delete';
-}
-
-const rolePermissions: Record<string, Permission[]> = {
+```javascript
+const rolePermissions = {
   admin: [
     { resource: '*', action: 'create' },
     { resource: '*', action: 'read' },
@@ -201,7 +194,7 @@ const rolePermissions: Record<string, Permission[]> = {
   ],
 };
 
-function hasPermission(role: string, resource: string, action: string): boolean {
+function hasPermission(role, resource, action) {
   const permissions = rolePermissions[role] || [];
   return permissions.some(
     (p) =>
@@ -210,7 +203,7 @@ function hasPermission(role: string, resource: string, action: string): boolean 
   );
 }
 
-app.decorate('checkPermission', function (resource: string, action: string) {
+app.decorate('checkPermission', function (resource, action) {
   return async (request, reply) => {
     await request.jwtVerify();
 
@@ -237,7 +230,7 @@ app.delete('/posts/:id', {
 
 Use `@fastify/bearer-auth` for API key and bearer token authentication:
 
-```typescript
+```javascript
 import bearerAuth from '@fastify/bearer-auth';
 
 const validKeys = new Set([process.env.API_KEY]);
@@ -258,7 +251,7 @@ app.get('/api/data', async (request) => {
 
 For database-backed API keys with custom validation:
 
-```typescript
+```javascript
 import bearerAuth from '@fastify/bearer-auth';
 
 app.register(bearerAuth, {
@@ -289,7 +282,7 @@ app.register(bearerAuth, {
 
 Integrate with OAuth providers using @fastify/oauth2:
 
-```typescript
+```javascript
 import fastifyOauth2 from '@fastify/oauth2';
 
 app.register(fastifyOauth2, {
@@ -339,7 +332,7 @@ app.get('/auth/google/callback', async (request, reply) => {
 
 Use @fastify/session for session management:
 
-```typescript
+```javascript
 import fastifyCookie from '@fastify/cookie';
 import fastifySession from '@fastify/session';
 import RedisStore from 'connect-redis';
@@ -396,8 +389,8 @@ app.post('/logout', async (request, reply) => {
 
 Check ownership of resources:
 
-```typescript
-app.decorate('checkOwnership', function (getResourceOwnerId: (request) => Promise<string>) {
+```javascript
+app.decorate('checkOwnership', function (getResourceOwnerId) {
   return async (request, reply) => {
     const ownerId = await getResourceOwnerId(request);
 
@@ -443,10 +436,10 @@ app.put('/posts/:id', {
 
 Use secure password hashing with argon2:
 
-```typescript
+```javascript
 import { hash, verify } from '@node-rs/argon2';
 
-async function hashPassword(password: string): Promise<string> {
+async function hashPassword(password) {
   return hash(password, {
     memoryCost: 65536,
     timeCost: 3,
@@ -454,7 +447,7 @@ async function hashPassword(password: string): Promise<string> {
   });
 }
 
-async function verifyPassword(hash: string, password: string): Promise<boolean> {
+async function verifyPassword(hash, password) {
   return verify(hash, password);
 }
 
@@ -488,7 +481,7 @@ app.post('/login', async (request, reply) => {
 
 Protect auth endpoints from brute force. **IMPORTANT: For production security, you MUST configure rate limiting with a Redis backend.** In-memory rate limiting is not safe for distributed deployments and can be bypassed.
 
-```typescript
+```javascript
 import fastifyRateLimit from '@fastify/rate-limit';
 import Redis from 'ioredis';
 

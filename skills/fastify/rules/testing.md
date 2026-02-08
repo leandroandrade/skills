@@ -11,7 +11,7 @@ metadata:
 
 Fastify's `inject()` method simulates HTTP requests without network overhead:
 
-```typescript
+```javascript
 import { describe, it, before, after } from 'node:test';
 import Fastify from 'fastify';
 import { buildApp } from './app.js';
@@ -64,7 +64,7 @@ describe('User API', () => {
 
 Test authenticated endpoints:
 
-```typescript
+```javascript
 describe('Protected Routes', () => {
   let app;
   let authToken;
@@ -118,7 +118,7 @@ describe('Protected Routes', () => {
 
 Test routes with query strings:
 
-```typescript
+```javascript
 it('should filter users by status', async (t) => {
   const response = await app.inject({
     method: 'GET',
@@ -150,7 +150,7 @@ it('should search users', async (t) => {
 
 Test routes with path parameters:
 
-```typescript
+```javascript
 it('should return user by id', async (t) => {
   const userId = 'user-123';
 
@@ -177,7 +177,7 @@ it('should return 404 for non-existent user', async (t) => {
 
 Test schema validation:
 
-```typescript
+```javascript
 describe('Validation', () => {
   it('should reject invalid email', async (t) => {
     const response = await app.inject({
@@ -223,7 +223,7 @@ describe('Validation', () => {
 
 Test multipart form data:
 
-```typescript
+```javascript
 import { createReadStream } from 'node:fs';
 import FormData from 'form-data';
 
@@ -248,7 +248,7 @@ it('should upload file', async (t) => {
 
 Test streaming responses:
 
-```typescript
+```javascript
 it('should stream large file', async (t) => {
   const response = await app.inject({
     method: 'GET',
@@ -264,7 +264,7 @@ it('should stream large file', async (t) => {
 
 Mock external services and databases:
 
-```typescript
+```javascript
 import { describe, it, before, after, mock } from 'node:test';
 
 describe('User Service', () => {
@@ -312,7 +312,7 @@ describe('User Service', () => {
 
 Test plugins independently:
 
-```typescript
+```javascript
 import { describe, it, before, after } from 'node:test';
 import Fastify from 'fastify';
 import cachePlugin from './plugins/cache.js';
@@ -347,7 +347,7 @@ describe('Cache Plugin', () => {
 
 Test hook behavior:
 
-```typescript
+```javascript
 describe('Hooks', () => {
   it('should add request id header', async (t) => {
     const response = await app.inject({
@@ -387,17 +387,11 @@ describe('Hooks', () => {
 
 Create a reusable test app builder:
 
-```typescript
-// test/helper.ts
+```javascript
+// test/helper.js
 import Fastify from 'fastify';
-import type { FastifyInstance } from 'fastify';
 
-interface TestContext {
-  app: FastifyInstance;
-  inject: FastifyInstance['inject'];
-}
-
-export async function buildTestApp(options = {}): Promise<TestContext> {
+export async function buildTestApp(options = {}) {
   const app = Fastify({
     logger: false, // Disable logging in tests
     ...options,
@@ -419,7 +413,7 @@ export async function buildTestApp(options = {}): Promise<TestContext> {
 
 // Usage in tests
 describe('API Tests', () => {
-  let ctx: TestContext;
+  let ctx;
 
   before(async () => {
     ctx = await buildTestApp();
@@ -443,7 +437,7 @@ describe('API Tests', () => {
 
 Use transactions for test isolation:
 
-```typescript
+```javascript
 describe('Database Integration', () => {
   let app;
   let transaction;
@@ -483,7 +477,7 @@ describe('Database Integration', () => {
 
 Structure tests for parallel execution:
 
-```typescript
+```javascript
 // Tests run in parallel by default with node:test
 // Use separate app instances or proper isolation
 
@@ -522,11 +516,8 @@ describe('Post API', async () => {
 # Run all tests
 node --test
 
-# Run with TypeScript
-node --test src/**/*.test.ts
-
 # Run specific file
-node --test src/routes/users.test.ts
+node --test src/routes/users.test.js
 
 # With coverage
 node --test --experimental-test-coverage

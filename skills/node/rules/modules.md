@@ -1,8 +1,8 @@
 ---
 name: modules
-description: ES Modules and CommonJS patterns
+description: ES Modules patterns
 metadata:
-  tags: modules, esm, commonjs, imports, exports
+  tags: modules, esm, imports, exports
 ---
 
 # Node.js Modules
@@ -18,9 +18,9 @@ Use ES Modules (ESM) for new projects:
 }
 ```
 
-```typescript
+```javascript
 // Named exports (preferred)
-export function processData(data: Data): Result {
+export function processData(data) {
   // ...
 }
 
@@ -36,7 +36,7 @@ import { processData, CONFIG } from './utils.js';
 
 Always include file extensions in ESM imports:
 
-```typescript
+```javascript
 // GOOD - explicit extension
 import { helper } from './helper.js';
 import config from './config.json' with { type: 'json' };
@@ -49,8 +49,8 @@ import { helper } from './helper';
 
 Use index files to simplify imports:
 
-```typescript
-// src/utils/index.ts
+```javascript
+// src/utils/index.js
 export { formatDate, parseDate } from './date.js';
 export { formatCurrency } from './currency.js';
 export { validateEmail } from './validation.js';
@@ -63,18 +63,18 @@ import { formatDate, formatCurrency } from './utils/index.js';
 
 Prefer named exports for better refactoring and tree-shaking:
 
-```typescript
+```javascript
 // GOOD - named exports
-export function createServer(config: Config): Server {
+export function createServer(config) {
   // ...
 }
 
-export function createClient(config: Config): Client {
+export function createClient(config) {
   // ...
 }
 
 // AVOID - default exports
-export default function createServer(config: Config): Server {
+export default function createServer(config) {
   // ...
 }
 ```
@@ -83,8 +83,8 @@ export default function createServer(config: Config): Server {
 
 Use dynamic imports for code splitting and conditional loading:
 
-```typescript
-async function loadPlugin(name: string): Promise<Plugin> {
+```javascript
+async function loadPlugin(name) {
   const module = await import(`./plugins/${name}.js`);
   return module.default;
 }
@@ -97,7 +97,7 @@ const { default: heavy } = await import('./heavy-module.js');
 
 Use `import.meta.dirname` and `import.meta.filename` (Node.js 20.11+):
 
-```typescript
+```javascript
 import { join } from 'node:path';
 
 const configPath = join(import.meta.dirname, 'config.json');

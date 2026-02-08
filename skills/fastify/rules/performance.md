@@ -20,7 +20,7 @@ Fastify is designed for performance. Key optimizations are built-in:
 
 Protect your application from overload with `@fastify/under-pressure`:
 
-```typescript
+```javascript
 import underPressure from '@fastify/under-pressure';
 
 app.register(underPressure, {
@@ -46,7 +46,7 @@ app.get('/health', async (request, reply) => {
 
 Response schemas enable fast-json-stringify, which is significantly faster than JSON.stringify:
 
-```typescript
+```javascript
 // FAST - uses fast-json-stringify
 app.get('/users', {
   schema: {
@@ -78,7 +78,7 @@ app.get('/users-slow', async () => {
 
 Add schemas at startup, not at request time:
 
-```typescript
+```javascript
 // GOOD - schemas compiled at startup
 app.addSchema({ $id: 'user', ... });
 
@@ -97,7 +97,7 @@ app.get('/users', async (request, reply) => {
 
 Pino is fast, but excessive logging has overhead:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 // Set log level via environment variable
@@ -123,7 +123,7 @@ app.get('/data', async (request) => {
 
 Use connection pools for databases:
 
-```typescript
+```javascript
 import postgres from 'postgres';
 
 // Create pool at startup
@@ -145,7 +145,7 @@ app.get('/users', async () => {
 
 Use `piscina` for CPU-intensive operations. It provides a robust worker thread pool:
 
-```typescript
+```javascript
 import Piscina from 'piscina';
 import { join } from 'node:path';
 
@@ -159,7 +159,7 @@ app.post('/compute', async (request) => {
 });
 ```
 
-```typescript
+```javascript
 // workers/compute.js
 export default function compute(data) {
   // CPU-intensive work here
@@ -171,7 +171,7 @@ export default function compute(data) {
 
 Stream large payloads instead of buffering:
 
-```typescript
+```javascript
 import { createReadStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 
@@ -211,10 +211,10 @@ app.get('/export', async (request, reply) => {
 
 Implement caching for expensive operations:
 
-```typescript
+```javascript
 import { LRUCache } from 'lru-cache';
 
-const cache = new LRUCache<string, unknown>({
+const cache = new LRUCache({
   max: 1000,
   ttl: 60000, // 1 minute
 });
@@ -245,7 +245,7 @@ app.get('/static-data', async (request, reply) => {
 
 Use `async-cache-dedupe` for deduplicating concurrent identical requests and caching:
 
-```typescript
+```javascript
 import { createCache } from 'async-cache-dedupe';
 
 const cache = createCache({
@@ -254,7 +254,7 @@ const cache = createCache({
   storage: { type: 'memory' },
 });
 
-cache.define('fetchData', async (id: string) => {
+cache.define('fetchData', async (id) => {
   return db.findById(id);
 });
 
@@ -268,7 +268,7 @@ app.get('/data/:id', async (request) => {
 
 For distributed caching, use Redis storage:
 
-```typescript
+```javascript
 import { createCache } from 'async-cache-dedupe';
 import Redis from 'ioredis';
 
@@ -284,7 +284,7 @@ const cache = createCache({
 
 Set appropriate payload limits:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify({
@@ -301,7 +301,7 @@ app.post('/upload', {
 
 Use compression for responses:
 
-```typescript
+```javascript
 import fastifyCompress from '@fastify/compress';
 
 app.register(fastifyCompress, {
@@ -320,7 +320,7 @@ app.get('/already-compressed', {
 
 Configure appropriate timeouts:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify({
@@ -342,7 +342,7 @@ app.get('/long-operation', {
 
 Disable features you don't need:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify({
@@ -371,7 +371,7 @@ autocannon -c 100 -d 30 -p 10 http://localhost:3000/api/users
 # -p: pipelining factor
 ```
 
-```typescript
+```javascript
 // Programmatic benchmarking
 import autocannon from 'autocannon';
 
@@ -399,7 +399,7 @@ This generates an interactive flame graph to identify performance bottlenecks.
 
 Monitor and optimize memory usage:
 
-```typescript
+```javascript
 // Add health endpoint with memory info
 app.get('/health', async () => {
   const memory = process.memoryUsage();

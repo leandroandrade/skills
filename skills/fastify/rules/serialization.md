@@ -7,13 +7,13 @@ metadata:
 
 # Response Serialization
 
-## Use TypeBox for Type-Safe Response Schemas
+## Use TypeBox for Response Schemas
 
-Define response schemas with TypeBox for automatic TypeScript types and fast serialization:
+Define response schemas with TypeBox for fast serialization:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
-import { Type, type Static } from '@sinclair/typebox';
+import { Type } from '@sinclair/typebox';
 
 const app = Fastify();
 
@@ -26,10 +26,8 @@ const UserResponse = Type.Object({
 
 const UsersResponse = Type.Array(UserResponse);
 
-type UserResponseType = Static<typeof UserResponse>;
-
-// With TypeBox schema - uses fast-json-stringify (faster) + TypeScript types
-app.get<{ Reply: Static<typeof UsersResponse> }>('/users', {
+// With TypeBox schema - uses fast-json-stringify (faster)
+app.get('/users', {
   schema: {
     response: {
       200: UsersResponse,
@@ -52,7 +50,6 @@ Fastify uses `fast-json-stringify` when response schemas are defined. This provi
 1. **Performance**: 2-3x faster serialization than JSON.stringify
 2. **Security**: Only defined properties are serialized (strips sensitive data)
 3. **Type coercion**: Ensures output matches the schema
-4. **TypeScript**: Full type inference with TypeBox
 
 ## Response Schema Benefits
 
@@ -61,7 +58,7 @@ Fastify uses `fast-json-stringify` when response schemas are defined. This provi
 3. **Documentation**: OpenAPI/Swagger integration
 4. **Type coercion**: Ensures correct output types
 
-```typescript
+```javascript
 app.get('/user/:id', {
   schema: {
     response: {
@@ -86,7 +83,7 @@ app.get('/user/:id', {
 
 Define schemas for different response codes:
 
-```typescript
+```javascript
 app.get('/users/:id', {
   schema: {
     response: {
@@ -124,7 +121,7 @@ app.get('/users/:id', {
 
 Use 'default' for common error responses:
 
-```typescript
+```javascript
 app.get('/resource', {
   schema: {
     response: {
@@ -153,7 +150,7 @@ app.get('/resource', {
 
 Create custom serialization functions:
 
-```typescript
+```javascript
 // Per-route serializer
 app.get('/custom', {
   schema: {
@@ -184,7 +181,7 @@ app.get('/custom', {
 
 Use the global serializer compiler:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify({
@@ -200,7 +197,7 @@ const app = Fastify({
 
 fast-json-stringify coerces types:
 
-```typescript
+```javascript
 app.get('/data', {
   schema: {
     response: {
@@ -230,7 +227,7 @@ app.get('/data', {
 
 Handle nullable fields properly:
 
-```typescript
+```javascript
 app.get('/profile', {
   schema: {
     response: {
@@ -262,7 +259,7 @@ app.get('/profile', {
 
 Control extra properties in response:
 
-```typescript
+```javascript
 // Strip additional properties (default)
 app.get('/strict', {
   schema: {
@@ -305,7 +302,7 @@ app.get('/flexible', {
 
 Serialize nested structures:
 
-```typescript
+```javascript
 app.addSchema({
   $id: 'address',
   type: 'object',
@@ -354,7 +351,7 @@ app.get('/user', {
 
 Handle dates consistently:
 
-```typescript
+```javascript
 app.get('/events', {
   schema: {
     response: {
@@ -385,7 +382,7 @@ app.get('/events', {
 
 Handle BigInt values:
 
-```typescript
+```javascript
 // BigInt is not JSON serializable by default
 app.get('/large-number', {
   schema: {
@@ -413,7 +410,7 @@ app.get('/large-number', {
 
 Stream responses bypass serialization:
 
-```typescript
+```javascript
 import { createReadStream } from 'node:fs';
 
 app.get('/file', async (request, reply) => {
@@ -446,7 +443,7 @@ app.get('/stream', async (request, reply) => {
 
 Modify data before serialization:
 
-```typescript
+```javascript
 app.addHook('preSerialization', async (request, reply, payload) => {
   // Add metadata to responses
   if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
@@ -465,7 +462,7 @@ app.addHook('preSerialization', async (request, reply, payload) => {
 
 Skip serialization for specific routes:
 
-```typescript
+```javascript
 app.get('/raw', async (request, reply) => {
   const data = JSON.stringify({ raw: true });
   reply.type('application/json');

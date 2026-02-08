@@ -11,7 +11,7 @@ metadata:
 
 Fastify's plugin system provides automatic encapsulation. Each plugin creates its own context, isolating decorators, hooks, and plugins registered within it:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import fp from 'fastify-plugin';
 
@@ -38,7 +38,7 @@ app.get('/parent', async function (request, reply) {
 
 Use `fastify-plugin` when you need to share decorators, hooks, or plugins with the parent context:
 
-```typescript
+```javascript
 import fp from 'fastify-plugin';
 
 // This plugin's decorators will be available to the parent and siblings
@@ -60,7 +60,7 @@ export default fp(async function databasePlugin(fastify, options) {
 
 Plugins are registered in order, but loading is asynchronous. Use `after()` for sequential dependencies:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import databasePlugin from './plugins/database.js';
 import authPlugin from './plugins/auth.js';
@@ -91,26 +91,20 @@ await app.ready();
 
 Always validate and document plugin options:
 
-```typescript
+```javascript
 import fp from 'fastify-plugin';
 
-interface CachePluginOptions {
-  ttl: number;
-  maxSize?: number;
-  prefix?: string;
-}
-
-export default fp<CachePluginOptions>(async function cachePlugin(fastify, options) {
+export default fp(async function cachePlugin(fastify, options) {
   const { ttl, maxSize = 1000, prefix = 'cache:' } = options;
 
   if (typeof ttl !== 'number' || ttl <= 0) {
     throw new Error('Cache plugin requires a positive ttl option');
   }
 
-  const cache = new Map<string, { value: unknown; expires: number }>();
+  const cache = new Map();
 
   fastify.decorate('cache', {
-    get(key: string): unknown | undefined {
+    get(key) {
       const item = cache.get(prefix + key);
       if (!item) return undefined;
       if (Date.now() > item.expires) {
@@ -119,7 +113,7 @@ export default fp<CachePluginOptions>(async function cachePlugin(fastify, option
       }
       return item.value;
     },
-    set(key: string, value: unknown): void {
+    set(key, value) {
       if (cache.size >= maxSize) {
         const firstKey = cache.keys().next().value;
         cache.delete(firstKey);
@@ -136,16 +130,11 @@ export default fp<CachePluginOptions>(async function cachePlugin(fastify, option
 
 Create configurable plugins using factory functions:
 
-```typescript
+```javascript
 import fp from 'fastify-plugin';
 
-interface RateLimitOptions {
-  max: number;
-  timeWindow: number;
-}
-
-function createRateLimiter(defaults: Partial<RateLimitOptions> = {}) {
-  return fp<RateLimitOptions>(async function rateLimitPlugin(fastify, options) {
+function createRateLimiter(defaults = {}) {
+  return fp(async function rateLimitPlugin(fastify, options) {
     const config = { ...defaults, ...options };
 
     // Implementation
@@ -163,7 +152,7 @@ app.register(createRateLimiter({ max: 100 }), { timeWindow: 60000 });
 
 Declare dependencies to ensure proper load order:
 
-```typescript
+```javascript
 import fp from 'fastify-plugin';
 
 export default fp(async function authPlugin(fastify) {
@@ -186,7 +175,7 @@ export default fp(async function authPlugin(fastify) {
 
 Use encapsulation to scope plugins to specific routes:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 
 const app = Fastify();
@@ -223,7 +212,7 @@ app.register(async function protectedRoutes(fastify) {
 
 Use the `prefix` option to namespace routes:
 
-```typescript
+```javascript
 app.register(import('./routes/users.js'), { prefix: '/api/v1/users' });
 app.register(import('./routes/posts.js'), { prefix: '/api/v1/posts' });
 
@@ -245,7 +234,7 @@ export default async function userRoutes(fastify) {
 
 Add metadata for documentation and tooling:
 
-```typescript
+```javascript
 import fp from 'fastify-plugin';
 
 async function metricsPlugin(fastify) {
@@ -268,7 +257,7 @@ export default fp(metricsPlugin, {
 
 Use `@fastify/autoload` for automatic plugin loading:
 
-```typescript
+```javascript
 import Fastify from 'fastify';
 import autoload from '@fastify/autoload';
 import { fileURLToPath } from 'node:url';
@@ -295,7 +284,7 @@ app.register(autoload, {
 
 Test plugins independently:
 
-```typescript
+```javascript
 import { describe, it, before, after } from 'node:test';
 import Fastify from 'fastify';
 import myPlugin from './my-plugin.js';
